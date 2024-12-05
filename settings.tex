@@ -1,5 +1,6 @@
 \PassOptionsToPackage{table,svgnames,dvipsnames}{xcolor}
 
+\usepackage[a-2u]{pdfx} % generate PDF/A: archival compliant, self-contained pdf
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[sc]{mathpazo}
@@ -25,14 +26,10 @@
 \usepackage[final]{microtype}
 \usepackage{caption}
 \usepackage[printonlyused]{acronym}
-\usepackage[hidelinks]{hyperref} % hidelinks removes colored boxes around references and links
-\AtBeginDocument{%
-	\hypersetup{
-		pdftitle=\getTitle,
-		pdfauthor=\getAuthor,
-	}
-}
 \usepackage{ifthen}
+
+
+\hypersetup{hidelinks} % removes colored boxes around references and links
 
 % for fachschaft_print.pdf
 \makeatletter
