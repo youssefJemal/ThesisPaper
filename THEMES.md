@@ -7,14 +7,14 @@ The document may be compiled using either or both
 
 ## Light theme (default)
 
-If you want to include the university and faculty logos, name them `logos/tum-black.pdf` and `logos/faculty-black.pdf`.
+University and faculty logos are included as `logos/tum-black.pdf` and `logos/faculty-black.pdf`.
 The logos themselves do not have to be black, of course.
 You can use the blue logos too, but do not change the file names.
 
 ## Dark theme (optional)
 
 To compile using the dark theme, append `jobname=dark` to the `make` call.
-If you want to include the university and faculty logos, name them `logos/tum-white.pdf` and `logos/faculty-white.pdf`.
+The included logos for this are `logos/tum-white.pdf` and `logos/faculty-white.pdf`.
 
 ## Commands
 
