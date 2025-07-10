@@ -20,13 +20,29 @@
 \usepackage{graphicx}
 \usepackage{scrhack} % necessary for listings package
 \usepackage{listings}
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{orange},
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  tabsize=4
+}
 \usepackage{lstautogobble}
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
 \usepackage{booktabs}
 \usepackage[final]{microtype}
-\usepackage{caption}
+\usepackage[font=small,justification=centering]{caption}
 \usepackage[printonlyused]{acronym}
 \usepackage{ifthen}
 

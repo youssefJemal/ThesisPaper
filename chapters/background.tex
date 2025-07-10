@@ -12,7 +12,7 @@ to another. This allows the CPU to work on multiple instructions simultaneously,
 stage. In a perfect scenario, where all instructions are independent, the processor can work simultaneously 
 on \begin{math}n\end{math} instructions, with \begin{math}n\end{math} being the depth of the pipeline, i.e., 
 the number of stages. The following table depicts a simple example of a five-stage pipeline. 
-At the 5th clock cycle, the CPU is simultaneously working on 5 instructions. \\ 
+At the 5th clock cycle, the CPU is simultaneously working on 5 instructions.  
 
 \begin{figure} [H]
 \centering
@@ -47,7 +47,7 @@ Vertical waste occurs when the processor is not able to start any instruction at
 dependency to the currently executing instructions. 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=10cm, height=7.5cm]{figures/cpu.pdf}
+    \includegraphics[width=10cm, height=7.5cm]{figures/cpu_wastages}
     \hspace{-2.5cm}
     \caption{Vertical waste vs. horizontal waste}
     \label{fig:cpu}
@@ -68,7 +68,7 @@ miss.
 \begin{figure}[H]
     \centering
     \hspace*{-2cm} 
-    \includegraphics[width=10cm, height=6cm]{figures/all.pdf}
+    \includegraphics[width=10cm, height=6cm]{figures/single_vs_multithreaded}
     \caption{Single-Threaded Core vs. Multi-Threaded Core}
     \label{fig:all}
 \end{figure}
@@ -109,7 +109,7 @@ with the existing VMs and can negatively affect the performance of these guests.
 The following figure summarizes the architecture of a traditional virtualization systems. 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm, height=6cm]{figures/hyper.pdf}
+  \includegraphics[width=10cm, height=6cm]{figures/traditional_hypervisor.pdf}
   \caption{Architecture of traditional virtualization Solution}
   \label{fig:hyper}
 \end{figure}
@@ -129,7 +129,7 @@ effectively allowing a near "bare-metal" performance. The following figure depic
 architecture for virtualization. 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm, height=7.5cm]{figures/nitro.pdf}
+  \includegraphics[width=10cm, height=7.5cm]{figures/nitro}
   \caption{Architecture of Nitro System Virtualization}
   \label{fig:nitro}
 \end{figure}

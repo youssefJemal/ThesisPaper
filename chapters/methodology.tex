@@ -1,0 +1,52 @@
+\chapter{Methodology}\label{chapter:methodology}
+To deploy the resources for the different experiments, we used terraform which is an \ac{IaC} tool 
+that's developed by HashiCorp and can be used to define and provision resources using the \ac{HCL}. 
+All the resources were deployed in the us-east-2 region.
+Additionally, we used distexprunner \cite{distex}, which is a powerful tool written in python 
+that helps write and run commands remotely across multiple nodes addressing them through their public IPs. 
+Distexprunner was consistently used across all the benchmarks for various purposes but mainly
+to gather all the benchmark results from the different EC2 Instances into a central S3 bucket.
+
+\section{CPU Benchmark}
+To generate CPU stress, we used sysbench \cite{sysbench}, which is a powerful cross-architecture tool, 
+that can be used for CPU stressing, among other options. It performs the deterministic task of checking 
+all prime numbers until reaching 10000 (default value) by doing standard division of the current number 
+by all numbers between 2 and its square root \cite{gentoo_sysbench}. The number of the worker threads can be 
+specified as an argument. The tool allows the specification of the total number of events that should 
+be performed by the created threads. We then use the total execution runtime as a comparison metric 
+between the different experiments. For comparison purposes, 
+we also developed our own CPU stressing tool called \textit{cpu\_burn} written in the C language. 
+The program takes two arguments, the first being the number of operations that each created thread will 
+perform and the second representing the number of threads that will be created. It then returns the 
+total wallclock runtime that was needed for the execution of this workload. The workload is defined in
+the following function. We compiled the program with the optimization level 0.
+\begin{figure}[H]
+\begin{lstlisting}[caption={perform\_work function in C}]
+void* perform_work(void* arg) {
+    ThreadWork* work = (ThreadWork*)arg;
+    double x = 0.0;
+
+    for (long long i = 0; i < work->operations; ++i) {
+        x += i * 0.000001;
+    }
+
+    work->result = x;
+    return NULL;
+}
+\end{lstlisting}
+\end{figure}
+
+\section{Network Benchmark}
+\subsection{Throughput}
+For network I/O stress, we used iPerf \cite{iperf}. This tool provides a benchmark for measuring the 
+available network bandwidth. It supports various protocols and can be used to test TCP, UDP, and SCTP 
+throughput. The tool probes the maximum achievable network bandwidth by transmitting a large number of packets 
+until the upper limit of throughput is reached. In our experiments, we measured the maximum UDP 
+bandwidth. We made this choice in order to avoid congestion effects that can be caused by TCP congestion 
+control, which could reduce the throughput even though there still might be bandwidth available. 
+\subsection{Latency}
+For latency benchmarking, we used the sockperf tool, which is a network benchmarking utility that can measure the 
+latency of packets at a sub-nanosecond resolution. This tool introduces very low overhead as it uses 
+Time Stamp Counter (TSC) registers that count the number of CPU cycles for measuring latency.   
+iPerf and sockperf require two nodes to run, a server and a client. In our experiments, clients and 
+servers were consistently deployed within the same Availability Zone, and private IP addresses were used.
