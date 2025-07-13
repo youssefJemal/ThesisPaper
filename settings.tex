@@ -45,7 +45,27 @@
 \usepackage[font=small,justification=centering]{caption}
 \usepackage[printonlyused]{acronym}
 \usepackage{ifthen}
-
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{
+        compat=1.3,
+        % create a custom style for the boxplots
+        my boxplot style/.style={
+            boxplot,
+            draw=black,
+            solid,
+            fill=white,
+            % -------------------------------------------------------------
+            % add your desired mark symbol and mark style here
+            mark=*,
+            every mark/.append style={
+                fill=gray,
+            },
+            % -------------------------------------------------------------
+        },
+    }
+\pgfplotsset{compat=1.17}
+\usepackage{pgfplotstable}
+\usetikzlibrary{pgfplots.statistics}
 
 \hypersetup{hidelinks} % removes colored boxes around references and links
 
