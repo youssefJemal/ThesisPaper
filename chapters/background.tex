@@ -1,88 +1,4 @@
 \chapter{Background}\label{chapter:background}
-\section{Simultaneous Multi-threading}
-Before we dive deeper into simultaneous multithreading, it's important to understand which problem it actually 
-tries to solve and what the motivation behind it is. 
-A processor consists of a few hundred registers, load/store units and a couple of multiple arithmetic units. 
-The main goal is to keep all these resource as busy as possible. To reach this, multiple techniques have been 
-employed such as instruction pipelining, superscalar architecture and out-of-order execution, that improve 
-instruction throughput and resource utilization of the processor.
-Pipelining is a technique that breaks down the execution of an instruction into several distinct stages, 
-with each stage using separate hardware resources. During each CPU cycle, instructions advance from one stage 
-to another. This allows the CPU to work on multiple instructions simultaneously, each being on a different 
-stage. In a perfect scenario, where all instructions are independent, the processor can work simultaneously 
-on \begin{math}n\end{math} instructions, with \begin{math}n\end{math} being the depth of the pipeline, i.e., 
-the number of stages. The following table depicts a simple example of a five-stage pipeline. 
-At the 5th clock cycle, the CPU is simultaneously working on 5 instructions.  
-
-\begin{figure} [H]
-\centering
-\begin{tabular}{c|ccccccc}
-\toprule
-\diagbox[width=3.5cm]{Instr. No.}{Clock Cycle} 
-  & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} \\
-\midrule
-1 & IF  & ID  & EX  & MEM & WB  &     &     \\
-2 &     & IF & ID  & EX  & MEM & WB  &     \\
-3 &     &     & IF & ID  & EX  & MEM & WB  \\
-4 &     &     &     & IF  & ID  & EX  & MEM \\
-5 &     &     &     &    & IF  & ID  & EX  \\
-\bottomrule
-\end{tabular}
-\caption{Basic five-stage pipeline (IF = Instruction fetch, ID = Instruction decode, EX = execute  MEM = memory read, WB = Write back to memory)}
-\label{fig:table}
-\end{figure}
-\noindent
-Modern processors are also superscalar. This means that each processor, can start executing more than one 
-instruction simultaneously by dispatching them to different execution units. For example it's able to fetch 
-two instructions on the same time. Issue width is an important characteristic of modern CPUs and it represents 
-the maximum number of instructions that can be executed simultaneously in a single clock cycle.
-Although these optimizations significantly increase the processor throughput, a relatively big independency 
-between the instructions is required to be able to fully utilize the parallelism. Out-Of-Order execution partially 
-solves this problem but is still not enough as it still dispatches instructions from the same thread, where 
-the dependency between the instructions is generally high. 
-The wastages that occur on the processor can be categorized into two categories: Horizontal waste and 
-vertical waste. 
-Horizontal waste occurs when the CPU is not able to fully saturate the issue width of the processor. 
-Vertical waste occurs when the processor is not able to start any instruction at all because of their 
-dependency to the currently executing instructions. 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=10cm, height=7.5cm]{figures/cpu_wastages}
-    \hspace{-2.5cm}
-    \caption{Vertical waste vs. horizontal waste}
-    \label{fig:cpu}
-\end{figure}
-\noindent
-This is where \ac{SMT} comes into play. \acs{SMT} is a technique that helps enhance the overall efficiency of superscalar CPUs 
-by improving the parallelization of computation \cite{wikipedia_hyperthreading}. This technology allows the 
-physical core to dispatch instructions from more than one thread \cite{intel_hyperthreading} without requiring 
-a context switch, effectively transforming each physical core into two (or more) "logical" cores. The idea is that instructions from different
-threads provide greate independency, which results in a better utilization of the core's execution resources.
-To be able to achieve this, some resources of the processor are duplicated, 
-e.g., those that store the architectural state such as registers and program counters. However, the logical 
-cores still share the same execution resources, which can create conflicts, especially if both threads have 
-the same workload nature, e.g., both are float heavy \cite{wikipedia_hyperthreading}. This technology can 
-improve CPU throughput by taking advantage of idle time that the core formerly spent waiting for other instructions 
-to be completed because of the dependeny between them \cite{intel_hyperthreading} e.g., when the core is waiting for data from memory after a cache 
-miss.
-\begin{figure}[H]
-    \centering
-    \hspace*{-2cm} 
-    \includegraphics[width=10cm, height=6cm]{figures/single_vs_multithreaded}
-    \caption{Single-Threaded Core vs. Multi-Threaded Core}
-    \label{fig:all}
-\end{figure}
-\noindent
-Both Intel and AMD implement this technology in their modern CPUs, providing two threads per physical core. 
-Intel brands it as Hyper-Threading, while AMD uses the standard term \ac{SMT}. The option to turn this 
-feature off is always available via the BIOS/UEFI settings. In the AWS dedicated hosts that run on an Intel or 
-AMD CPU with hyperthreading enabled, the number of vCPUs is always the double of the number of physical cores. 
-This, however, opens up the possibility for CPU contention, if two virtual machines have access to vCPUs that 
-share the same underlying physical core. Unlike Intel and AMD CPUs, AWS-designed Graviton processors, that 
-are built around the ARM architecture, do not support hyper-threading \cite{thorat2024graviton} and 
-expose one execution context, i.e., vCPU for each physical core. This allows for a better CPU isolation 
-between the different tenants. 
-
 \section{Virtualization}
 Virtualization is a technology that allows the creation of isolated virtual environments also known as 
 Virtual Machines that run on the same physical server. Each VM has its own operating system and acts as 
@@ -118,7 +34,12 @@ The following figure summarizes the architecture of a traditional virtualization
 Virtualization technology has evolved significantly. It began with full software virtualization, where the guest OS is unmodified and "unaware" of the virtual environment. Privileged instructions 
 are trapped by the CPU and the hypervisor emulates the sensitive instructions using binary translation. This is, however, very slow and can make the host apps run 2x to 10x slower. Then paravirtualization was introduced, where the guest OS is modified to interact directly with the hypervisor via "hypercalls", removing the abstract emulation layer that is found in full software virtualization. 
 The next major leap was hardware assisted virtualization (HVM) which introduced virtualization support directly on the hardware level by providing highly efficient and fast 
-virtualization commands. This provides a significant improvement in comparison to the previous virtualization techniques. Intel offers this under the Intel Vt-x technology that provides virtualization of CPU and memory. Another important example is Single Root Virtualization (SR-IOV), which is a technology that allows physical PCIs device such as Network Interface Card (NIC) to expose multiple virtual devices to the hypervisor. The hypervisor can then provide the different virtual machines with direct hardware access to thiese virtual devices, which increase I/O performance significantly. 
+virtualization commands. This provides a significant improvement in comparison to the previous virtualization 
+techniques. Intel offers this under the Intel Vt-x technology that provides virtualization of CPU and memory.
+Another important example is Single Root Virtualization (SR-IOV), which is a technology that allows physical 
+PCIs device such as Network Interface Card (NIC) to expose multiple virtual devices to the hypervisor. 
+The hypervisor can then provide the different virtual machines with direct hardware access to thiese virtual 
+devices, which increases the I/O performance significantly. 
 
 \subsection{The AWS Nitro System}
 The Nitro System is a result of a multi-year incremental process of AWS re-imagining the virtualization 
@@ -139,9 +60,8 @@ There are three main components in the AWS Nitro System.
 These are dedicated hardware components that operate independently from the EC2's server main board 
 (CPU and memory) and are physically attached to it via PCIe. They are responsible for executing all the 
 tasks that concern the outside world in relation to the EC2 Server. They provide all I/O Interfaces such 
-as the ones for storage and networking. When the host's system is using Nitro hypervisor, i.e., not a 
-bare-metal, then these card employ the previously explained SR-IOV technology to provide direct hardware 
-interfaces to the VMs. Example of nitrocards are Nitro card for EBS, Nitro Card for Instance storage, and 
+as the ones for storage and networking. These cards employ the previously explained SR-IOV technology to provide direct hardware 
+interfaces to the VMs. Example of Nitro cards are Nitro card for EBS, Nitro Card for Instance storage, and 
 Nitro Controller, which provides the hardware root of trust of the Nitro System. 
 \subsubsection{The Nitro Security Chip}
 The Nitro Security Chip extends the hardware root of trust and control over the system main board including 
@@ -153,6 +73,95 @@ CPUs.
 \subsubsection{The Nitro Hypervisor}
 The third component is the AWS Nitro Hypervisor. This hypervisor has much less responsibilities than normal 
 hypervisors, as a lot of functions are offloaded by dedicated hardware. It has three main functionalities: 
-partitioning memory and CPU by usiing the virtualization commands provided by the underlying processor, 
+partitioning memory and CPU by using the virtualization commands provided by the underlying processor, 
 assigning the virtual hardware interfaces provided by the Nitro cards to the Virtual Machines, and handle 
 the machine management commands that come from the Nitro Controller (start, terminate, stop etc.). 
+
+\section{Simultaneous Multi-threading (valid)}
+Before we dive deeper into \ac{SMT}, it's important to understand which problem it  
+tries to solve and what the motivation behind it is. \\
+A processor consists of a few hundred registers, load/store units and a couple of multiple arithmetic units. 
+The main goal is to keep all these resource as busy as possible. To reach this, multiple techniques have been 
+employed such as instruction pipelining, superscalar architecture and out-of-order execution 
+\cite{SMT_Maximizing_on_chip_parallelism}.
+Pipelining is a technique that breaks down the execution of an instruction into several distinct 
+stages, with each stage using separate hardware resources \cite{SMT_under_the_hood}. During each CPU cycle, 
+instructions advance from one stage to another. This allows the CPU to work on multiple instructions 
+simultaneously, each being on a different stage. In a perfect scenario, where all instructions are 
+independent, the processor can work simultaneously on \begin{math}n\end{math} instructions, 
+with \begin{math}n\end{math} being the depth of the pipeline, i.e., the number of stages. 
+The following table depicts a simple example of a five-stage pipeline. At the 5th clock cycle, 
+the CPU is simultaneously working on 5 instructions.  
+
+\begin{figure} [H]
+\centering
+\begin{tabular}{c|ccccccc}
+\toprule
+\diagbox[width=3.5cm]{Instr. No.}{Clock Cycle} 
+  & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} \\
+\midrule
+1 & IF  & ID  & EX  & MEM & WB  &     &     \\
+2 &     & IF & ID  & EX  & MEM & WB  &     \\
+3 &     &     & IF & ID  & EX  & MEM & WB  \\
+4 &     &     &     & IF  & ID  & EX  & MEM \\
+5 &     &     &     &    & IF  & ID  & EX  \\
+\bottomrule
+\end{tabular}
+\caption{Basic five-stage pipeline (IF = Instruction fetch, ID = Instruction decode, EX = execute  MEM = memory read, WB = Write back to memory)}
+\label{fig:table}
+\end{figure}
+\noindent
+Modern processors are also superscalar. This means that each processor, can start executing more 
+than one instruction per cycle by dispatching them to different execution units \cite{SMT_Maximizing_on_chip_parallelism}. 
+Issue width is an important characteristic of modern CPUs and it represents 
+the maximum number of instructions that can be started in a single clock cycle.
+Although these optimizations significantly increase the processor throughput, the dependency  
+between the instructions and the long latency-operations of the executing threads limits the usage of the 
+available execution resources \cite{SMT_Maximizing_on_chip_parallelism}. Out-Of-Order execution partially 
+solves this problem but is still not enough as it still dispatches instructions from the same thread, where 
+the dependency between the instructions is inherently high. 
+The wastages that occur on the processor can be categorized into two categories: Horizontal and 
+vertical waste \cite{SMT_Maximizing_on_chip_parallelism}. 
+Horizontal waste occurs when the CPU is not able to fully saturate the issue width of the processor. 
+Vertical waste occurs when the processor is not able to start any instruction at all because of their 
+dependency to the executing instructions. Traditional multithreading addresses this issue problem, by 
+switching to a different thread, whenever the currently executing one stalls, for example due 
+to memory latency. This approach, however, only mitigates vertical waste, as it still issues instructions 
+from only one thread in any given cycle \cite{SMT_Maximizing_on_chip_parallelism}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=10cm, height=7.5cm]{figures/cpu_wastages}
+    \hspace{-2.5cm}
+    \caption{Vertical waste vs. horizontal waste}
+    \label{fig:cpu}
+\end{figure}
+\noindent
+This is where \acl{SMT} comes into play. \acs{SMT} is a technique that helps enhance the overall efficiency of superscalar CPUs 
+by improving the parallelization of computation \cite{SMT_under_the_hood}. This technology allows the 
+physical core to dispatch instructions from more than one thread per cyle without requiring 
+a context switch \cite{SMT_Maximizing_on_chip_parallelism}, effectively transforming each physical core into two (or more) "logical" cores. The idea is that instructions from different
+threads provide greater independency, which results in a better utilization of the core's execution 
+resources \cite{SMT_under_the_hood}.
+To be able to achieve this, some resources of the processor are duplicated, 
+e.g., those that store the architectural state such as registers and program 
+counters \cite{SMT_under_the_hood}. However, the logical 
+cores still share the same execution resources, which can create conflicts, especially if both threads have 
+the same workload nature, e.g., both are float heavy \cite{SMT_modeling_resource_contention}. 
+\begin{figure}[H]
+    \centering
+    \hspace*{-2cm} 
+    \includegraphics[width=10cm, height=6cm]{figures/single_vs_multithreaded}
+    \caption{Single-Threaded Core vs. Multi-Threaded Core}
+    \label{fig:all}
+\end{figure}
+\noindent
+Both Intel and AMD implement this technology in their modern CPUs, providing two threads per physical core. 
+Intel brands it as Hyper-Threading, while AMD uses the standard term \ac{SMT}. In the AWS dedicated hosts that run on an Intel or 
+AMD CPU with hyperthreading enabled, the number of vCPUs is always equal to the double of the number of 
+physical cores, with each vCPU corresponding to a hyperthread. This, however, opens up the possibility 
+for CPU contention, if two virtual machines have access to vCPUs that share the same underlying physical core. 
+Unlike Intel and AMD CPUs, AWS-designed Graviton processors, that are built around the ARM architecture, 
+do not support hyper-threading and expose one execution context, i.e., vCPU for 
+each physical core \cite{graviton}. This allows for a better isolation between the different tenants as 
+there is no resource sharing between the different vCPUs apart from the last level cache and the memory 
+system \cite{graviton}. 

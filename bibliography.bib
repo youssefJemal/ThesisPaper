@@ -1,10 +1,4 @@
-@book{latex,
-  title = {LaTeX : A Documentation Preparation System User's Guide and Reference Manual},
-  publisher = {Addison-Wesley Professional},
-  year = {1994},
-  author = {Leslie Lamport}
-}
-
+%valide
 @INPROCEEDINGS{contention,
   author={Han, Xinlei and Schooley, Raymond and Mackenzie, Delvin and David, Olaf and Lloyd, Wes J.},
   booktitle={2020 IEEE International Conference on Cloud Engineering (IC2E)}, 
@@ -16,51 +10,47 @@
   keywords={Cloud computing;Benchmark testing;Servers;Hardware;Degradation;Virtual machine monitors;Virtualization;resource contention;multitenancy;resource management and performance;Infrastructure-as-a-Service;virtualization},
   doi={10.1109/IC2E48712.2020.00024}}
 
-@misc{ycruncher,
-  author       = {Alexander J. Yee},
-  title        = {y-cruncher: A Multi-Threaded Pi-Program},
-  year         = {2007--2025},
-  howpublished = {\url{https://www.numberworld.org/y-cruncher/}},
-  note         = {Accessed: 2025-05-23}
+%valide 
+@INPROCEEDINGS{SMT_Maximizing_on_chip_parallelism,
+  author={Tullsen, D.M. and Eggers, S.J. and Levy, H.M.},
+  booktitle={Proceedings 22nd Annual International Symposium on Computer Architecture}, 
+  title={Simultaneous multithreading: Maximizing on-chip parallelism}, 
+  year={1995},
+  volume={},
+  number={},
+  pages={392-403},
+  keywords={Multithreading;Yarn;Samarium;Parallel processing;Modems;Permission;Delay;Switches;Computer science;Throughput},
+  doi={}}
+
+%valide 
+@online{SMT_under_the_hood,
+  author    = {Abhinav Upadhyay},
+  title     = {Two Threads, One Core: How Simultaneous Multithreading Works Under the Hood},
+  year      = {2024},
+  url       = {https://blog.codingconfessions.com/p/simultaneous-multithreading},
+  note      = {Accessed: 2025-07-19},
+  journal   = {Confessions of a Code Addict (Coding Confessions)}
 }
 
-@misc{containerprofiler,
-  author       = {Wes J. Lloyd},
-  title        = {Tool to profile the resource utilization of Docker Containers},
-  howpublished = {\url{https://github.com/wlloyduw/ContainerProfiler}},
-  note         = {Accessed: 2025-05-23}
-}
+%valide
+@INPROCEEDINGS{SMT_modeling_resource_contention,
+  author={Moseley, T. and Kihm, J.L. and Connors, D.A. and Grunwald, D.},
+  booktitle={2005 International Conference on Computer Design}, 
+  title={Methods for modeling resource contention on simultaneous multithreading processors}, 
+  year={2005},
+  volume={},
+  number={},
+  pages={373-380},
+  keywords={Multithreading;Processor scheduling;Yarn;Surface-mount technology;Throughput;Operating systems;Counting circuits;Bandwidth;Hardware;Linear regression},
+  doi={10.1109/ICCD.2005.74}}
 
-@misc{sysbench,
-  author       = {Alexey Kopytov},
-  title        = {sysbench: Scriptable database and system performance benchmark},
-  howpublished = {\url{https://github.com/akopytov/sysbench}},
-  note         = {Accessed: 2025-05-23},
-  license      = {GPL-2.0}
-}
-
-@misc{wikipedia_hyperthreading,
-  author       = {{Wikipedia contributors}},
-  title        = {Hyper-threading --- Wikipedia{,} The Free Encyclopedia},
-  year         = {2025},
-  url          = {https://en.wikipedia.org/wiki/Hyper-threading},
-  note         = {Accessed: 2025-05-23}
-}
-
-@misc{intel_hyperthreading,
-  author       = {{Intel Corporation}},
-  title        = {What Is Hyper-Threading?},
-  year         = {2025},
-  howpublished = {\url{https://www.intel.com/content/www/us/en/gaming/resources/hyper-threading.html}},
-  note         = {Accessed: 2025-05-23}
-}
-
-@misc{thorat2024graviton,
-  author       = {Nishant Thorat},
-  title        = {AWS Graviton: Unlocking Performance and Cost Efficiency in the Cloud},
-  year         = {2024},
-  howpublished = {\url{https://www.cloudyali.io/blogs/aws-graviton-performance-cost-efficiency}},
-  note         = {Accessed: 2025-05-23}
+%valide
+@misc{graviton,
+  title        = {AWS Graviton Performance Testing: Tips for Independent Software Vendors},
+  author       = {Amazon Web Services},
+  year         = {2021},
+  howpublished = {\url{https://docs.aws.amazon.com/pdfs/whitepapers/latest/aws-graviton-performance-testing/aws-graviton-performance-testing.pdf}},
+  note         = {Accessed: 2025-07-19}
 }
 
 @misc{gentoo_sysbench,
@@ -99,4 +89,12 @@
   title        = {{iPerf – The TCP, UDP and SCTP Network Bandwidth Measurement Tool}},
   howpublished = {\url{https://iperf.fr/}},
   note         = {Accessed: 2025-06-01}
+}
+
+@misc{sysbench,
+  author       = {Alexey Kopytov},
+  title        = {sysbench: Scriptable database and system performance benchmark},
+  howpublished = {\url{https://github.com/akopytov/sysbench}},
+  note         = {Accessed: 2025-05-23},
+  license      = {GPL-2.0}
 }
