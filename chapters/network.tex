@@ -225,5 +225,65 @@ At full capacity, The average throughput (0.51 Gbps) is 30.7\% lower than the ba
 m5.large instance (0.75 Gbps)
 This more significant performance degradation close to 30\% was expected as hypothesized earlier. 
 In this experiment, we also observe an important performance variation between the different nodes 
-compared to the previous experiment. 
+compared to the previous experiment.
+
 \section{Latency}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=14cm,
+    height=8cm,
+    xlabel={Bandwidth (Gbit/sec)},
+    ylabel={Latency (\(\mu s\))},
+    title={Average Latency vs Bandwidth},
+    grid=major,
+    xmin=0, xmax=26,
+    ymin=35, ymax=120,
+    xtick={0,2,...,25.5},
+    ytick={40,60,...,120},
+    line width=1pt,
+    mark size=2.5pt,
+    tick label style={font=\small},
+    label style={font=\small},
+    title style={font=\bfseries\small},
+]
+\addplot[
+    color=blue,
+    mark=*,
+]
+coordinates {
+    (0, 40.281)
+    (1, 40.750)
+    (2, 40.962)
+    (3, 40.562)
+    (4, 43.174)
+    (5, 41.930)
+    (6, 41.321)
+    (7, 42.730)
+    (8, 41.737)
+    (9, 43.058)
+    (10, 42.344)
+    (11, 43.749)
+    (12, 42.563)
+    (13, 43.221)
+    (14, 42.983)
+    (15, 42.511)
+    (16, 43.369)
+    (17, 44.616)
+    (18, 45.298)
+    (19, 45.465)
+    (20, 44.918)
+    (21, 45.990)
+    (22, 47.289)
+    (23, 50.653)
+    (23.5, 50.938)
+    (24, 62.502)
+    (24.5, 61.927)
+    (24.7, 72.939)
+};
+\end{axis}
+\end{tikzpicture}
+\caption{Average Latency vs Bandwidth}
+\end{figure}

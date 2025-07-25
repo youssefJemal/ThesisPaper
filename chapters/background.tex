@@ -1,28 +1,34 @@
 \chapter{Background}\label{chapter:background}
-\section{Virtualization}
+\section{Virtualization (Verify and tick)}
 Virtualization is a technology that allows the creation of isolated virtual environments also known as 
-Virtual Machines that run on the same physical server. Each VM has its own operating system and acts as 
-an independent physical computer. These VMs are called "guests" and the physical server is called "host". 
-This technology is crucial for the \ac{IaaS} model that's offered by cloud providers, 
-as it allows for a greater resource- and cost-efficiency by dividing the physical server into different 
-instance types, driving the price of compute resources down. Users can accordingly choose the instance type 
-with the allocated resources that are optimal for their workload. \\
-The main components that handle the necessary tasks for virtualization are the \ac{VMM} 
-also called hypervisor and the management domain. Most of the instructions that are executed by Virtual 
-Machines run natively on the CPU and do not require intervention from the \acs{VMM}. However, when a privileged 
-instruction, which is not available to regular applications, is encountered, the CPU raises a trap. 
-The trap signals to the \acs{VMM} to intervene and emulate the behavior of the instruction.  After the emulation 
-is finished, the control is then given back to the guest OS. \\
-Virtualization cannot be accomplished by the VMM alone, as it does not virtualize hardware and therefore 
+Virtual Machines that run on the same physical server \cite{virtualization_review}. Each VM has its own 
+operating system and acts as an independent physical computer. These VMs are called "guests" and the 
+physical server is called "host". This technology is crucial for the \ac{IaaS} model that's offered by 
+cloud providers, as it provides various advantages \cite{virtualization_review}. It improves resource and 
+cost efficiency by dividing the physical server into multiple isolated instances, each tailored to 
+different workload needs. This reduces the amount of unused capacity that occurs when a server is dedicated 
+to just one task. \\
+The main component that handles the necessary tasks for virtualization is the \ac{VMM} 
+also called hypervisor \cite{nitro_whitepaper}. Most of the instructions that are executed by Virtual 
+Machines run natively on the CPU and do not require intervention from the \acs{VMM}, such as arithmetic 
+operations. 
+However, there is a class of privileged instructions that guests can not directly execute on the CPU, 
+such as I/O operations. When such an instruction is encountered, the CPU raises a 
+trap, that signals to the \acs{VMM} to intervene and emulate the behavior of the instruction \cite{nitro_whitepaper}.  
+After the emulation is finished, the control is then given back to the guest OS, 
+which is unaware of the underyling emulation. Several optimizations techniques have been introduced 
+to reduce virtualization overhead, which will be briefly outlined later. \\
+Virtualization cannot be carried out by the VMM alone, as it does not virtualize hardware and therefore 
 can not grant the guests access to the underlying hardware devices such as network interface, storage drives, 
-and input peripherals. Device models are required for this. They are basically software components that 
-communicate with the shared hardware and expose multiple virtual device interfaces to the VMs. These 
-device models, along with other management software, run in a special privileged virtual machine called 
-management domain which represents the host's operating system and has access to all the underlying hardware. 
-This domain is called domain zero or dom0 in the Xen project and root/parent partition in the Hyper-V project. 
-Since the device models are software-based, they compete for resources for CPU and system resources along 
-with the existing VMs and can negatively affect the performance of these guests. 
-The following figure summarizes the architecture of a traditional virtualization systems. 
+and input peripherals. Device models are required for this \cite{nitro_whitepaper}. They are basically 
+software components that communicate with the shared hardware and expose multiple virtual device 
+interfaces to the VMs. These device models, along with other management software, run in a special 
+privileged virtual machine called management domain which represents the host's operating system and 
+has access to all the underlying hardware. This domain is called domain zero or dom0 in the Xen project 
+and root/parent partition in the Hyper-V project \cite{nitro_whitepaper}. Since the device models are 
+software-based, they compete for resources for CPU and system resources along with the existing VMs and 
+can negatively affect the performance of these guests. 
+The following figure summarizes the architecture of a traditional virtualization system. 
 \begin{figure}[H]
   \centering
   \includegraphics[width=10cm, height=6cm]{figures/traditional_hypervisor.pdf}
@@ -31,23 +37,33 @@ The following figure summarizes the architecture of a traditional virtualization
 \end{figure}
 
 \subsection{Evolution of Virtualization Solutions}
-Virtualization technology has evolved significantly. It began with full software virtualization, where the guest OS is unmodified and "unaware" of the virtual environment. Privileged instructions 
-are trapped by the CPU and the hypervisor emulates the sensitive instructions using binary translation. This is, however, very slow and can make the host apps run 2x to 10x slower. Then paravirtualization was introduced, where the guest OS is modified to interact directly with the hypervisor via "hypercalls", removing the abstract emulation layer that is found in full software virtualization. 
-The next major leap was hardware assisted virtualization (HVM) which introduced virtualization support directly on the hardware level by providing highly efficient and fast 
-virtualization commands. This provides a significant improvement in comparison to the previous virtualization 
-techniques. Intel offers this under the Intel Vt-x technology that provides virtualization of CPU and memory.
-Another important example is Single Root Virtualization (SR-IOV), which is a technology that allows physical 
+Virtualization technology has evolved significantly. It began with full software virtualization, 
+where the guest OS is unmodified and "unaware" of the virtual environment. Privileged instructions 
+are trapped by the CPU and the hypervisor emulates the sensitive instructions using 
+binary translation \cite{virtualization_gregg}. This is, however, very slow and can make the host apps 
+run 2x to 10x slower \cite{virtualization_gregg}. \\
+Then paravirtualization was introduced, where the guest OS is modified to interact directly with the 
+hypervisor via "hypercalls", removing the abstract emulation layer that is found in full 
+software virtualization. This, however, introduces additional complexity, as it requires modifications
+to guest operating system \cite{hvm}.\\ 
+The next major leap was hardware assisted virtualization (HVM) which introduced virtualization support 
+directly on the hardware level by providing highly efficient and fast virtualization commands. 
+This provides a significant improvement in comparison to the previous virtualization 
+techniques, as it reduces the involvement of the host system in handling privilege and adress translation
+space tasks \cite{hvm}. Intel offers this under the Intel VT-x technology that provides virtualization of CPU and memory.
+Another important example is Single Root Virtualization (SR-IOV) \cite{nitro_whitepaper}, which is a technology that allows physical 
 PCIs device such as Network Interface Card (NIC) to expose multiple virtual devices to the hypervisor. 
-The hypervisor can then provide the different virtual machines with direct hardware access to thiese virtual 
+The hypervisor can then provide the different virtual machines with direct hardware access to these virtual 
 devices, which increases the I/O performance significantly. 
 
 \subsection{The AWS Nitro System}
 The Nitro System is a result of a multi-year incremental process of AWS re-imagining the virtualization 
-technology in order to optimize it specifically for their EC2 data centers. The main idea was to decompose 
-the software components that are on the management domain and offload them to independent purpose-built server 
-components. This helps minimize the resource usage caused by software running in the management domain, 
-effectively allowing a near "bare-metal" performance. The following figure depicts the new AWS microservice 
-architecture for virtualization. 
+technology in order to optimize it specifically for their EC2 data centers \cite{nitro_whitepaper}. 
+The main idea was to decompose the software components, i.e., the device models, 
+that run on the management domain and offload them to independent purpose-built server components. 
+This helps minimize the resource usage caused by software running in the management domain, effectively 
+allowing a near "bare-metal" performance. Figure \ref{fig:nitro} depicts the new AWS microservice 
+architecture for virtualization \cite{nitro_whitepaper}. 
 \begin{figure}[H]
   \centering
   \includegraphics[width=10cm, height=7.5cm]{figures/nitro}
@@ -55,33 +71,40 @@ architecture for virtualization.
   \label{fig:nitro}
 \end{figure}
 \noindent
-There are three main components in the AWS Nitro System. 
+There are three main components in the AWS Nitro System \cite{nitro_whitepaper}. 
 \subsubsection{The Nitro Cards}
 These are dedicated hardware components that operate independently from the EC2's server main board 
-(CPU and memory) and are physically attached to it via PCIe. They are responsible for executing all the 
-tasks that concern the outside world in relation to the EC2 Server. They provide all I/O Interfaces such 
-as the ones for storage and networking. These cards employ the previously explained SR-IOV technology to provide direct hardware 
-interfaces to the VMs. Example of Nitro cards are Nitro card for EBS, Nitro Card for Instance storage, and 
+(CPU and memory) and are physically attached to it via PCIe. They "implement all the outward-facing 
+control interfaces used by the EC2 service" responsible for provisioning and managing compute, memory, 
+and storage \cite{nitro_whitepaper}. They provide all I/O Interfaces as well, such 
+as the ones for storage and networking. These cards employ the previously explained SR-IOV technology to 
+provide direct hardware interfaces to the VMs. Example of Nitro cards are Nitro cards for I/O and 
 Nitro Controller, which provides the hardware root of trust of the Nitro System. 
+
 \subsubsection{The Nitro Security Chip}
-The Nitro Security Chip extends the hardware root of trust and control over the system main board including 
-CPU and memory. It's managed by the Nitro Controller mentioned previously and plays a crucial role in enabling 
-AWS to offer bare metal instances. In virtualized environments, the hypervisor is responsible for securing the 
-host's hardware assets. However, in bare metal modes, when no hypervisor is present, The Nitro Security Chip 
+The Nitro Security Chip extends the hardware root of trust and control over the system main board. It's 
+managed by the Nitro Controller mentioned previously and plays a crucial role in enabling 
+AWS to offer bare-metal instances. Bare-metal instances provide direct access to the physical CPUs and memory 
+of the physical server. They are useful mainly for licensing-restriced business critical applications, or for 
+specific workloads that require direct access to underlying infrastructure. \\ 
+In virtualized environments, the hypervisor is responsible for securing the host's hardware assets. 
+However, in bare metal modes, when no hypervisor is present, 5he Nitro Security Chip 
 assumes this role and ensures the security of the system firmware from tampering attempts through the system 
-CPUs.  
+CPUs \cite{nitro_whitepaper}. 
+
 \subsubsection{The Nitro Hypervisor}
 The third component is the AWS Nitro Hypervisor. This hypervisor has much less responsibilities than normal 
-hypervisors, as a lot of functions are offloaded by dedicated hardware. It has three main functionalities: 
-partitioning memory and CPU by using the virtualization commands provided by the underlying processor, 
-assigning the virtual hardware interfaces provided by the Nitro cards to the Virtual Machines, and handle 
-the machine management commands that come from the Nitro Controller (start, terminate, stop etc.). 
+hypervisors, as a lot of functions are offloaded to the nitro cards. It has three main functionalities: 
+It's responsible for partitioning memory and CPU by using the virtualization commands provided by the 
+underlying processor. It's also in charge of assigning the virtual hardware interfaces provided by 
+the Nitro cards to the Virtual Machines. It also handles the machine management commands that come from 
+the Nitro Controller (start, terminate, stop etc.) \cite{nitro_whitepaper}. 
 
-\section{Simultaneous Multi-threading (valid)}
+\section{Simultaneous Multi-threading (\checkmark)}
 Before we dive deeper into \ac{SMT}, it's important to understand which problem it  
 tries to solve and what the motivation behind it is. \\
 A processor consists of a few hundred registers, load/store units and a couple of multiple arithmetic units. 
-The main goal is to keep all these resource as busy as possible. To reach this, multiple techniques have been 
+The main goal is to keep all these resources as busy as possible. To reach this, multiple techniques have been 
 employed such as instruction pipelining, superscalar architecture and out-of-order execution 
 \cite{SMT_Maximizing_on_chip_parallelism}.
 Pipelining is a technique that breaks down the execution of an instruction into several distinct 
@@ -116,18 +139,18 @@ than one instruction per cycle by dispatching them to different execution units 
 Issue width is an important characteristic of modern CPUs and it represents 
 the maximum number of instructions that can be started in a single clock cycle.
 Although these optimizations significantly increase the processor throughput, the dependency  
-between the instructions and the long latency-operations of the executing threads limits the usage of the 
+between the instructions and the long latency-operations of the executing threads limit the usage of the 
 available execution resources \cite{SMT_Maximizing_on_chip_parallelism}. Out-Of-Order execution partially 
 solves this problem but is still not enough as it still dispatches instructions from the same thread, where 
 the dependency between the instructions is inherently high. 
 The wastages that occur on the processor can be categorized into two categories: Horizontal and 
 vertical waste \cite{SMT_Maximizing_on_chip_parallelism}. 
 Horizontal waste occurs when the CPU is not able to fully saturate the issue width of the processor. 
-Vertical waste occurs when the processor is not able to start any instruction at all because of their 
-dependency to the executing instructions. Traditional multithreading addresses this issue problem, by 
-switching to a different thread, whenever the currently executing one stalls, for example due 
-to memory latency. This approach, however, only mitigates vertical waste, as it still issues instructions 
-from only one thread in any given cycle \cite{SMT_Maximizing_on_chip_parallelism}.
+Vertical waste occurs when the processor is not able to start any instruction at all on a given cycle
+because of the dependency to the executing instructions or delays such as memory latency. 
+Traditional multithreading addresses this issue by switching to a different thread, whenever 
+the currently executing one stalls.. This approach, however, only mitigates vertical waste, as 
+it still issues instructions from only one thread at any given cycle \cite{SMT_Maximizing_on_chip_parallelism}.
 \begin{figure}[H]
     \centering
     \includegraphics[width=10cm, height=7.5cm]{figures/cpu_wastages}
@@ -138,7 +161,7 @@ from only one thread in any given cycle \cite{SMT_Maximizing_on_chip_parallelism
 \noindent
 This is where \acl{SMT} comes into play. \acs{SMT} is a technique that helps enhance the overall efficiency of superscalar CPUs 
 by improving the parallelization of computation \cite{SMT_under_the_hood}. This technology allows the 
-physical core to dispatch instructions from more than one thread per cyle without requiring 
+physical core to dispatch instructions from more than one thread per cycle without requiring 
 a context switch \cite{SMT_Maximizing_on_chip_parallelism}, effectively transforming each physical core into two (or more) "logical" cores. The idea is that instructions from different
 threads provide greater independency, which results in a better utilization of the core's execution 
 resources \cite{SMT_under_the_hood}.
@@ -160,7 +183,7 @@ Intel brands it as Hyper-Threading, while AMD uses the standard term \ac{SMT}. I
 AMD CPU with hyperthreading enabled, the number of vCPUs is always equal to the double of the number of 
 physical cores, with each vCPU corresponding to a hyperthread. This, however, opens up the possibility 
 for CPU contention, if two virtual machines have access to vCPUs that share the same underlying physical core. 
-Unlike Intel and AMD CPUs, AWS-designed Graviton processors, that are built around the ARM architecture, 
+Unlike Intel and AMD CPUs, AWS-designed Graviton processors, built around the ARM architecture, 
 do not support hyper-threading and expose one execution context, i.e., vCPU for 
 each physical core \cite{graviton}. This allows for a better isolation between the different tenants as 
 there is no resource sharing between the different vCPUs apart from the last level cache and the memory 
