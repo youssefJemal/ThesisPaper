@@ -1,12 +1,36 @@
-\chapter{Introduction}\label{chapter:introduction}
+\chapter{Introduction (\checkmark)}\label{chapter:introduction}
 
-Thrhtroughout the last years, infrastrcutre-as-a-service has become one of the most used business models. 
-In this model, cloud providers abstract the server's physcial machiens and provide virtual machines to end-users
-that share these resources. This was possible thank to the drastic improvements that were introduced 
-to the virtualization techonology with the intrdouction of hardware-assisted virtualization that significantly 
-reduced virtualization overhead and allowed direct communicated of the guests with the virtualized hardware
-interfaces of the hardware. This, however, does not mitigated, perofrmance degradation that happens due 
-to resource contention between the different tenants. In 2015, AWS introduced dedicated host, that enables
-cutomers to deploy VMs on a physical machines that's completely under their control. In this paper, we're 
-interested on quantifying the extent of the perfromance degradation that can heppen and analyze its 
-manifesation across key resources namely CPU and network. 
+\ac{IaaS} is a cloud computing model that provides customers with access to computing 
+resources such as servers, networking and virtualization. Cloud vendors in general and \ac{AWS} in particular 
+abstract the physical placement of the virtual machine providing users with limited transparency to how 
+many tenants are sharing the underlying hardware. This information can be crucial as 
+this co-residency can result in significant performance degradation across different resources such as 
+CPU, memory, network and storage I/O \cite{characterizing_public} \cite{mitigating_resource}. 
+Although virtualization technology has undergone major improvements in 
+the past decades, contention can still occur due to other factors such as \ac{SMT}, Network Interface
+Card queuing, and other system-level bottlenecks. To address the issue of unwanted resource 
+contention, Amazon Web Services introduced dedicated hosts \cite{dedHost}, which are physical servers that are fully 
+dedicated to the customer,  allowing users to deploy virtual machines with complete transparency over their
+placement. Another potential solution are the spread placement groups, which ensure that the VMs are placed 
+on different physical servers. It can be
+particularly useful for highly parallel workloads, where the nodes have a similar workload nature
+(network- or CPU-intensive). However, this approach only mitigates internal resource contention and is 
+limited to a small number of EC2 instances in the same availability zone \cite{spread}. \\
+In this paper, we leverage different benchmarking tools to assess the extent of the performance degradation 
+that can occur because of VM co-location. We are particularly interested in quantifying the worst possible 
+degradation that can happen by running identical resource-intensive benchmarks in parallel across VMs 
+residing on the same dedicated host. We primarily utilized 5th and 6th general-purpose \ac{AWS} EC2 VM 
+instances that are built around the \ac{AWS} Nitro system and run on top of the Nitro hypervisor. 
+We analyze CPU contention across various CPU vendors namely Intel, Gravtion, and AMD. 
+We examine whether and to what extent \ac{SMT} is involved in this degradation. 
+Furthermore, we investigate network resource contention, which is interesting since \ac{AWS} does not provide
+exact specifications like other resources such as CPU and memory. 
+We analyze the degradation that can occur both on throughput and latency across co-located EC2 Instances.\\ 
+The thesis is structured as follows: We start by discussing related work in section 2. 
+Section 3 introduces the key concepts required to understand this work, namely virtualization and 
+Simulatenous Multi Threading. In section 4, we explain the methodology of our experiments
+and introduce the different benchmarking tools that were adopted throughout the thesis. 
+Section 5 analyzes CPU contention across 5th and 6th EC2 generations and contexualizes the results in 
+relation to the CPU architecture. In Section 6, we examine network I/O contention and 
+explore its manifestation across throughput and latency. Section 7 concludes our work and summarizes 
+its most important findings. 

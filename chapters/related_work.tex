@@ -1,1 +1,55 @@
-\chapter{Related Work}\label{chapter:related}
+\chapter{Related Work (\checkmark)}\label{chapter:related}
+
+Han et. al \cite{characterizing_public} investigated public cloud resource contention. They executed
+CPU, disk, and network I/O benchmarks across up to 48 VMs sharing the same dedicated host. The tests were
+executed mainly on 3rd (c3), 4th (c4), and 5th (m5d) generation VMs.  
+The results showed considerable performance degradation with CPU degradation reaching 48\% and 
+Network throughput up to 94\%. Throughput degradation was measured in relation to the initial 
+bandwidth available to the VM, i.e., burst bandwidth and not the baseline bandwidth, which can be misleading. 
+We will discuss this further in the network I/O section. The paper also analyzed the 
+unexpected CPU performance degradation caused by adding idle linux VMs on the dedicated host. 
+The measurements were leveraged to train multiple linear regression and random forest models to predict
+VM co-residency. The linear regression model achieved an $R^2$ of .942.
+This could be very practical, as it enables user to relocate VMs to have 
+access to better performance with less contention. \\
+Rehman et. al \cite{initial_findings} analyzed the problem of provisioning variation in public clouds. 
+By running benchmarks and sample MapReduce workloads, they found that provisioning variation can 
+impact the performance by a factor of 5. They argue that this is primarily due to network I/O contention. \\
+Lloyd et. al \cite{mitigating_resource} reported a 25\% performance degradation when 
+running compute intensive scientific modelling web services on pools consisting of m1.large VMs with 
+high resource contention. They developed an approach called Noisy-Neighbor-Detect that leverages 
+the cpuSteal metric to identify VMs with noisy neighbors from a pool of worker VMs. 
+cpuSteal refers to the percentage of time a virtual CPU spends waiting for the hypervisor to allocate 
+a physical CPU to run on. \\
+Many other techniques were developed by researchers to identify or predict resource contention.
+Govindan et. al \cite{cache_contention} developed an only software solution called Cuanta 
+that predicts performance interference due to shared chip level resource namely cache space and memory 
+bandwidth. Although, the performance degradation of consolidated application can be empirically
+investigated, the number of possible workload placements is combinatorial. A cloud provider hosting 
+$M$ VMs with $N$ VMs per server needs to perform $\frac{M!}{N!\,(M-N)!}$ measurements, which is
+highly impractical. Cuanta does not require any changes to the software of the hosting platform and the 
+prediction complexity is linear to the number of cores sharing the Last Level Cache (LLC), 
+making it a far better alternative than its emprical counterpart. 
+The software provided promising results with up to 96\% accuracy on Intel Core-2-Duo processors. \\
+Some efforts have looked at side channels as a way to detect VM co-location. Side channels are an indirect
+way of extracting information from a system that designers never intended to expose its implementation
+details. Inci et. al \cite{LLC} developed three methods to detect co-located VMs. 
+The first two approaches leveraged Last Level Cache: Cooperative LLC covert channel and  
+Cache profiling. While the former requires cooperation of the victim VMs, the latter operates
+independently. In the second method, the attacker fills the cache with its own data and after a
+short pause re-accesses the same buffer while monitoring the memory access time. Low eviction rates
+indicate that the attacker is likely alone on the host, while high eviction rates point toward 
+VM co-location. The third method is memory bus locking. The idea is for the attacker to launch 
+special instructions that block the memory bus and then analyze the resulting delays to infer 
+VM-colocation. All three methods had a high accuracy in detecting co-location in real commercial cloud
+settings.
+
+\begin{comment}
+They also investigated performance variation that's caused by hardware heterogeneity
+in the same instance type. They examined this trend on 12 VM types across 1st (m1, c1), 2nd (m2), 
+and 3rd (c3) EC2 generationand found that 25\% of the types had more than one hardware implementation. They implemented the virtual 
+machine scaler, a web services application, that helps with VM management/placement on AWS. 
+It features the "forceCpuType" parameter, that allows the user to specify the backing CPU, enforcing hardware 
+homogeneity. Mon-matching VMs are repeatedly terminated until the "right" CPU is allocated. 
+With this, they were able to improve scientific modeling web services performance by up to 14\%.
+\end{comment}

@@ -59,7 +59,7 @@
   author       = {Bean, J. D. and others},
   institution  = {Amazon Web Services (AWS)},
   year         = {2022},
-  month        = {November},
+  month        = {11},
   url          = {https://docs.aws.amazon.com/whitepapers/latest/security-design-of-aws-nitro-system/security-design-of-aws-nitro-system.html}
 }
 
@@ -96,7 +96,90 @@ doi = {10.26438/ijcse/v7i4.11311136}
   url          = {https://www.admin-magazine.com/Articles/Hardware-assisted-Virtualization}
 }
 
-----------------------------
+%valide
+@INPROCEEDINGS{characterizing_public,
+  author={Han, Xinlei and Schooley, Raymond and Mackenzie, Delvin and David, Olaf and Lloyd, Wes J.},
+  booktitle={2020 IEEE International Conference on Cloud Engineering (IC2E)}, 
+  title={Characterizing Public Cloud Resource Contention to Support Virtual Machine Co-residency Prediction}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={162-172},
+  keywords={Cloud computing;Benchmark testing;Servers;Hardware;Degradation;Virtual machine monitors;Virtualization;resource contention;multitenancy;resource management and performance;Infrastructure-as-a-Service;virtualization},
+  doi={10.1109/IC2E48712.2020.00024}
+  }
+
+%valide
+@INPROCEEDINGS{mitigating_resource,
+  author={Lloyd, Wes and Pallickara, Shrideep and David, Olaf and Arabi, Mazdak and Rojas, Ken},
+  booktitle={2017 IEEE International Conference on Cloud Engineering (IC2E)}, 
+  title={Mitigating Resource Contention and Heterogeneity in Public Clouds for Scientific Modeling Services}, 
+  year={2017},
+  volume={},
+  number={},
+  pages={159-166},
+  keywords={Conferences;Resource Management and Performance;IaaS;Virtualization;Multi-Tenancy},
+  doi={10.1109/IC2E.2017.29}}
+
+%valid
+@misc{dedHost,
+  author       = {{Amazon Web Services, Inc.}},
+  title        = {{Amazon EC2 Dedicated Hosts}},
+  url          = {https://aws.amazon.com/ec2/dedicated-hosts/},
+  note         = {Accessed: 2025-07-26}
+}
+
+%valid
+@misc{spread,
+  author       = {{Amazon Web Services, Inc.}},
+  title        = {{Placement groups for your Amazon EC2 instances}},
+  url          = {https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html},
+  note         = {Accessed: 2025‑07‑26}
+}
+
+%valid
+@inproceedings{cache_contention,
+author = {Govindan, Sriram and Liu, Jie and Kansal, Aman and Sivasubramaniam, Anand},
+title = {Cuanta: quantifying effects of shared on-chip resource interference for consolidated virtual machines},
+year = {2011},
+isbn = {9781450309769},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2038916.2038938},
+doi = {10.1145/2038916.2038938},
+booktitle = {Proceedings of the 2nd ACM Symposium on Cloud Computing},
+articleno = {22},
+numpages = {14},
+keywords = {cache pressure clone, last-level cache, memory subsystem interference, performance estimation, resource contention, workload consolidation},
+location = {Cascais, Portugal},
+series = {SOCC '11}
+}
+
+%valid
+@inproceedings{LLC,
+author = {Inci, Mehmet Sinan and Gulmezoglu, Berk and Eisenbarth, Thomas and Sunar, Berk},
+year = {2016},
+month = {04},
+pages = {19-34},
+title = {Co-location Detection on the Cloud},
+volume = {9689},
+isbn = {978-3-319-43282-3},
+doi = {10.1007/978-3-319-43283-0_2}
+}
+
+%valid
+@INPROCEEDINGS{initial_findings,
+  author={Rehman, M. Suhail and Sakr, Majd F.},
+  booktitle={2010 IEEE Second International Conference on Cloud Computing Technology and Science}, 
+  title={Initial Findings for Provisioning Variation in Cloud Computing}, 
+  year={2010},
+  volume={},
+  number={},
+  pages={473-479},
+  keywords={Blades;Benchmark testing;Cloud computing;Bandwidth;Layout;Hardware;Virtual machining;provisioning variation;performance evaluation;provisioning;IaaS},
+  doi={10.1109/CloudCom.2010.47}}
+
+%valid
 @misc{gentoo_sysbench,
   author       = {{Gentoo Wiki contributors}},
   title        = {Sysbench},
@@ -104,13 +187,79 @@ doi = {10.26438/ijcse/v7i4.11311136}
   note         = {Accessed: 2025-05-25}
 }
 
+%valid
+@misc{iperf,
+  author       = {{iPerf Project}},
+  title        = {{iPerf – The TCP, UDP and SCTP Network Bandwidth Measurement Tool}},
+  howpublished = {\url{https://iperf.fr/}},
+  note         = {Accessed: 2025-06-01}
+}
+
+%valid
+@misc{sockperf,
+  author       = {Mellanox Technologies},
+  title        = {sockperf: Network benchmarking utility over socket API},
+  year         = {2025},
+  howpublished = {\url{https://github.com/Mellanox/sockperf}},
+  note         = {Accessed: 2025-08-02}
+}
+
+%valid
+@misc{re,
+  author       = {Python Software Foundation},
+  title        = {re --- Regular expression operations},
+  howpublished = {\url{https://docs.python.org/3/library/re.html}},
+  note         = {Python 3.13.5 documentation; accessed 2025-08-02}
+}
+
+%valid
+@misc{csv,
+  author       = {Python Software Foundation},
+  title        = {csv — CSV File Reading and Writing},
+  howpublished = {\url{https://docs.python.org/3/library/csv.html}},
+  note         = {Python 3.13.5 documentation; accessed 2025‑08‑02}
+}
+
+%valid
+@misc{pricing,
+  author       = {Amazon Web Services},
+  title        = {Amazon EC2 Dedicated Hosts Pricing},
+  url          = {https://aws.amazon.com/ec2/dedicated-hosts/pricing/},
+  note         = {Accessed: 2025-08-02}
+}
+
+%valid
+@misc{cloudspecs,
+  title = {CloudSpecs},
+  author = {TUM DIS},
+  howpublished = {\\url{https://tum-dis.github.io/cloudspecs/}},
+  note = {Accessed: 2025‑08‑02}
+}
+
+%valid
+@misc{vantage,
+  title        = {AWS EC2 Instances – Vantage Instances},
+  howpublished = {\url{https://instances.vantage.sh/}},
+  note         = {Accessed: 2025-08-02}
+}
+
+@misc{hypervisorSpec,
+  author       = {{Amazon Web Services}},
+  title        = {Amazon EC2 instance types},
+  howpublished = {\url{https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html\#instance-hypervisor-type}},
+  note         = {Accessed: 2025-08-02}
+}
+
+%valid
 @misc{aws_m5_instances,
   author       = {{Amazon Web Services}},
   title        = {Amazon EC2 M5 Instances},
-  year         = {2024},
   url          = {https://aws.amazon.com/ec2/instance-types/m5/},
   note         = {Accessed: 2025-06-12}
 }
+
+
+---------------
 
 @misc{awsEC2GP2025,
   author       = {{Amazon Web Services}},
@@ -126,13 +275,6 @@ doi = {10.26438/ijcse/v7i4.11311136}
   year         = {2024},
   howpublished = {\url{https://github.com/erdewit/distex}},
   note         = {GitHub repository, accessed 2025-06-01}
-}
-
-@misc{iperf,
-  author       = {{iPerf Project}},
-  title        = {{iPerf – The TCP, UDP and SCTP Network Bandwidth Measurement Tool}},
-  howpublished = {\url{https://iperf.fr/}},
-  note         = {Accessed: 2025-06-01}
 }
 
 @misc{sysbench,

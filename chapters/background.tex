@@ -1,16 +1,16 @@
 \chapter{Background}\label{chapter:background}
-\section{Virtualization (Verify and tick)}
+\section{Virtualization (\checkmark)}
 Virtualization is a technology that allows the creation of isolated virtual environments also known as 
 Virtual Machines that run on the same physical server \cite{virtualization_review}. Each VM has its own 
-operating system and acts as an independent physical computer. These VMs are called "guests" and the 
-physical server is called "host". This technology is crucial for the \ac{IaaS} model that's offered by 
+operating system and acts as an independent physical computer. The VMs are called "guests" and the 
+physical server is called "host". Virtualization is crucial for the \ac{IaaS} model that's offered by 
 cloud providers, as it provides various advantages \cite{virtualization_review}. It improves resource and 
 cost efficiency by dividing the physical server into multiple isolated instances, each tailored to 
 different workload needs. This reduces the amount of unused capacity that occurs when a server is dedicated 
 to just one task. \\
 The main component that handles the necessary tasks for virtualization is the \ac{VMM} 
-also called hypervisor \cite{nitro_whitepaper}. Most of the instructions that are executed by Virtual 
-Machines run natively on the CPU and do not require intervention from the \acs{VMM}, such as arithmetic 
+also called hypervisor \cite{nitro_whitepaper}. Most of the instructions that are executed by the virtual 
+achines run natively on the CPU and do not require intervention from the \acs{VMM}, such as arithmetic 
 operations. 
 However, there is a class of privileged instructions that guests can not directly execute on the CPU, 
 such as I/O operations. When such an instruction is encountered, the CPU raises a 
@@ -44,8 +44,8 @@ binary translation \cite{virtualization_gregg}. This is, however, very slow and 
 run 2x to 10x slower \cite{virtualization_gregg}. \\
 Then paravirtualization was introduced, where the guest OS is modified to interact directly with the 
 hypervisor via "hypercalls", removing the abstract emulation layer that is found in full 
-software virtualization. This, however, introduces additional complexity, as it requires modifications
-to guest operating system \cite{hvm}.\\ 
+software virtualization. The downside of this approach is that it introduces additional complexity, 
+as it requires modifications to the guest operating system \cite{hvm}.\\ 
 The next major leap was hardware assisted virtualization (HVM) which introduced virtualization support 
 directly on the hardware level by providing highly efficient and fast virtualization commands. 
 This provides a significant improvement in comparison to the previous virtualization 
@@ -54,7 +54,7 @@ space tasks \cite{hvm}. Intel offers this under the Intel VT-x technology that p
 Another important example is Single Root Virtualization (SR-IOV) \cite{nitro_whitepaper}, which is a technology that allows physical 
 PCIs device such as Network Interface Card (NIC) to expose multiple virtual devices to the hypervisor. 
 The hypervisor can then provide the different virtual machines with direct hardware access to these virtual 
-devices, which increases the I/O performance significantly. 
+devices, which significantly increases the I/O performance. 
 
 \subsection{The AWS Nitro System}
 The Nitro System is a result of a multi-year incremental process of AWS re-imagining the virtualization 
@@ -62,7 +62,7 @@ technology in order to optimize it specifically for their EC2 data centers \cite
 The main idea was to decompose the software components, i.e., the device models, 
 that run on the management domain and offload them to independent purpose-built server components. 
 This helps minimize the resource usage caused by software running in the management domain, effectively 
-allowing a near "bare-metal" performance. Figure \ref{fig:nitro} depicts the new AWS microservice 
+allowing a near "bare-metal" performance. Figure \ref{fig:nitro} depicts the new AWS
 architecture for virtualization \cite{nitro_whitepaper}. 
 \begin{figure}[H]
   \centering
@@ -73,7 +73,7 @@ architecture for virtualization \cite{nitro_whitepaper}.
 \noindent
 There are three main components in the AWS Nitro System \cite{nitro_whitepaper}. 
 \subsubsection{The Nitro Cards}
-These are dedicated hardware components that operate independently from the EC2's server main board 
+Nitro cards are dedicated hardware components that operate independently from the EC2's server main board 
 (CPU and memory) and are physically attached to it via PCIe. They "implement all the outward-facing 
 control interfaces used by the EC2 service" responsible for provisioning and managing compute, memory, 
 and storage \cite{nitro_whitepaper}. They provide all I/O Interfaces as well, such 
@@ -83,21 +83,21 @@ Nitro Controller, which provides the hardware root of trust of the Nitro System.
 
 \subsubsection{The Nitro Security Chip}
 The Nitro Security Chip extends the hardware root of trust and control over the system main board. It's 
-managed by the Nitro Controller mentioned previously and plays a crucial role in enabling 
+managed by the Nitro Controller and plays a crucial role in enabling 
 AWS to offer bare-metal instances. Bare-metal instances provide direct access to the physical CPUs and memory 
 of the physical server. They are useful mainly for licensing-restriced business critical applications, or for 
-specific workloads that require direct access to underlying infrastructure. \\ 
+specific workloads that require direct access to the underlying infrastructure. \\ 
 In virtualized environments, the hypervisor is responsible for securing the host's hardware assets. 
-However, in bare metal modes, when no hypervisor is present, 5he Nitro Security Chip 
+However, in bare metal modes, when no hypervisor is present, the Nitro Security Chip 
 assumes this role and ensures the security of the system firmware from tampering attempts through the system 
 CPUs \cite{nitro_whitepaper}. 
 
 \subsubsection{The Nitro Hypervisor}
-The third component is the AWS Nitro Hypervisor. This hypervisor has much less responsibilities than normal 
-hypervisors, as a lot of functions are offloaded to the nitro cards. It has three main functionalities: 
+The third component is the AWS Nitro Hypervisor, which has significantly fewer responsibility than traditional
+hypervisors, as most virtualization tasks are offloaded to the Nitro cards. It has three main functions.
 It's responsible for partitioning memory and CPU by using the virtualization commands provided by the 
-underlying processor. It's also in charge of assigning the virtual hardware interfaces provided by 
-the Nitro cards to the Virtual Machines. It also handles the machine management commands that come from 
+processor. It's also in charge of assigning the virtual hardware interfaces provided by 
+the Nitro cards to the Virtual Machines and also handles the machine management commands that come from 
 the Nitro Controller (start, terminate, stop etc.) \cite{nitro_whitepaper}. 
 
 \section{Simultaneous Multi-threading (\checkmark)}
