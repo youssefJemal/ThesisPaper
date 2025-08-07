@@ -60,13 +60,24 @@ m5.12xlarge  & 48 & 192  \\
 \end{table}
 \noindent
 The m5 dedicated host has 48 physical cores and therefore 96 vCPUs. It features the Nitro v2 
-Hypervisor \cite{awsEC2GP2025}. We used terraform to deploy the resources in the us-east-2a zone. 
+Hypervisor \cite{awsEC2GP2025}. We used terraform to deploy the resources in the us-east-2a zone.
+In all our experiments, the m5 dedicated host used the 2nd generation Intel CPU. We repeated the experiments
+using hosts running on 1st generation Intel CPU and we received same results, which excludes
+the possibility of variation based on hardware heterogeneity. 
 The experiment is structured as follows: We begin by deploying a node, referred to as test node 
 on the dedicated host. Next, we incrementally add neighbors that fully utilize their CPUs. 
-We analyze the effect of adding these neighbors on the runtime of running sysbench and cpu\_burn on the test 
-node.
+We analyze the effect of adding these neighbors on the runtime of running sysbench and cpu\_burn on 
+the test node.
+Figure \ref{fig:cpu_exp} provides a simple visualization of the experiment. 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=11cm, height=7cm]{figures/cpu_exp}
+  \caption{Architecture of the CPU contention analysis experiment}
+  \label{fig:cpu_exp}
+\end{figure}
+\noindent
 For our first experiment, we exclusively used m5.2xlarge instances, each featuring 8vCPUs and 32 GiB RAM. 
-This means that the maximum number of nodes on the dedicated host is 12. In our experiments the dedicated host used the Cascade Lake-SP cpu (2nd gen). The results can 
+This means that the maximum number of nodes on the dedicated host is 12. The results can 
 be seen in Figure \ref{fig::m5.2xlarge_busy}
 
 \begin{figure}[H]
@@ -136,11 +147,11 @@ test node using m5.2xlarge instances}
 \noindent
 We notice a very similar degradation pattern for the two tools we used.
 Adding the first neighbor added a performance degradation of  1.6\% on our test node. The performance then 
-remained constant form the next 4 neighbors. Afterwards, the 6th neighbor increased this degradation to 
+remained constant for the next 4 neighbors. Afterwards, the 6th neighbor increased this degradation to 
 3.3\%. The 7th neighbor introduced the last witnessed decrease in the performance to reach 5\% in both 
 experiments. \\ 
 This experiment alone does not allow us to pinpoint the reason behind the performance degradation.
-Potential reasons could be pyhsical core co-location between the neighbors and the test node or 
+Potential reasons could be physical core co-location between the neighbors and the test node or 
 hypervisor overhead. The latter is very unlikely as the Nitro system along with hardware assisted 
 virtualization should introduce a very small overhead. 
 We repeat the same experiment but we add idle VMs to see the extent of the performance degradation that 
@@ -208,10 +219,11 @@ happens. Figure \ref{fig::m5.2xlarge_idle} summarizes the results.
 \label{fig::m5.2xlarge_idle}
 \end{figure}
 \noindent
-We notice the exact same degradation pattern of the earlier experiment. This result undermines 
-the hypothesis that the performance degradation is due to physical core co-location between the different 
-tenants as we would have expected the effect to be less pronounced when adding idle VMs. To investigate 
-this further, we repeat the experiment using m5.large instances, of which the dedicated host can 
+We notice the exact same degradation pattern of the earlier experiment. This results is very unexpected
+and undermines the hypothesis that the performance degradation is due to physical core co-location between the different 
+tenants as we would have expected the effect to be less pronounced when adding idle VMs. However, we will 
+refrain from making assumptions until we finish the benchmarking experiments on the m5 family. 
+To investigate this further, we repeat the experiment using m5.large instances, of which the dedicated host can 
 provision 48. The results of our experiment can be seen in Figure \ref{fig::m5.large}. In this 
 case as well, adding busy or idle neighbors provided the exact same results.  
 
@@ -347,7 +359,7 @@ case as well, adding busy or idle neighbors provided the exact same results.
 \end{axis}
 \end{tikzpicture}
 \caption{Effect of adding busy/idle neighbors on the CPU speed of the sysbench and cpu\_burn command on 
-the test node using m5.large hosts}
+the test node using m5.large instances}
 \label{fig::m5.large}
 \end{figure}
 
@@ -358,11 +370,9 @@ this degradation to 9,5\%. The runtime then remained constant for the next 23 ne
 effect on our test node. The 28th neighbor then introduced the last performance degradation reaching the 
 maximum performance degradation of 13\% with both tools. \\
 To have a full picture of the performance degradation across the different instance types, we repeated 
-the experiment using the remaining instance types. An important observation is that we notice nearly 
-identical levels of performance degradation when using m5 hosts that run on 1st gen and 2nd gen Intel 
-CPUs. Additionally, the results are always similar between the two tools. From this point, we'll only prcoceed 
-with the cpu\_burn tool. Adding idle or busy neighbors provides 
-the same results in all our experiments. The results are summarized in the following table. 
+the experiment using the remaining instance types and summarized the results in table \ref{tab::all_m5}.
+The results are always similar between the two tools. From this point, we'll only prcoceed 
+with the cpu\_burn tool. Adding idle or busy neighbors constantly provided the same results. 
 \begin{table}[H]
 \centering
 \begin{tabular}{ |c|c|c|c|c|c|c }
@@ -374,20 +384,21 @@ Degradation (Busy/Idle) \% & 13 & 13 & 4.8 & 3.25 & 0  \\
 
 \end{tabular}
 \caption{Maximum achievable performance degradation on our test node across various m5 instance types}
+\label{tab::all_m5}
 \end{table}
 \noindent
-The higher performance degradation happens when using large and xlarge instances with almost the same 
+The biggest performance degradation happens when using large and xlarge instances with almost the same 
 percentage of 13\%. It then drops to 5\% for the 2xlarge type, as seen in figure \ref{fig::m5.2xlarge_busy}.
 We notice a further decrease in the performance degradation for the 4xlarge type to 3.25\% and then its complete 
-absence when using the 12xlarge, of which the dedicated host can only provision 2. 
+absence when using the 12xlarge type, of which the dedicated host can only provision 2. \\
 In their paper, Han et. al. \cite{contention} argue that this CPU performance degradation is due to CPU 
 context switching overhead that's caused by the KVM (Nitro) scheduler. Even though this hypothesis 
 seems convincing, since the degradation decreases as the number of tenants decreases (Table 2), 
 We think that it's very unlikely, as the Nitro System should provide a near bare-metal performance. 
 To investigate this issue further we run the experiment directly on the bare-metal m5.instance. For this, we use 
 the cpu\_burn tool and incrementally increase the number of threads that are created and examine
-whether we witness any performance degradation. The results can be seen in the following figure.
-
+whether we witness any performance degradation. Figure \ref{fig::m5_metal} visualizes the outcome 
+of the experiment. 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -425,25 +436,26 @@ whether we witness any performance degradation. The results can be seen in the f
 
 \end{axis}
 \end{tikzpicture}
-\caption{Effect of adding threads on the CPU performance using m5.metal and the cpu\_burn tool} 
+\caption{Runtime impact of incrementally increasing threads in the cpu\_burn command on an m5.metal instance} 
+\label{fig::m5_metal}
 \end{figure}
 \noindent
 Although the m5.metal has 96 vCPUs i.e., logical cores, we 
 notice a very important pattern of performance degradation throughout the first 96 threads reaching 53\%. 
 This is caused by the physical core co-location that happens between the different 
 threads, resulting in resource contention, as the execution resources are not duplicated. 
-We also notice a very interesting point that's worth mentioning. In all our experiments, the instances 
-initially started with a baseline performance significantly worse than running the exact number of threads 
-directly on the metal offering. Figure \ref{fig::metal_vs_VMs} compares the runtime of cpu\_burner on the test node 
-(all threads are busy) as we keep adding completely busy neighbors, in comparison to running the cpu\_burner 
-tool directly on the m5.metal while incrementally increasing the number of busy threads.
+We also notice a very interesting point. In all our previous experiments, the instances 
+initially started with a nominal baseline performance significantly worse than running the 
+exact number of threads directly on the metal instance. Figure \ref{fig::metal_vs_VMs} compares 
+the runtime of cpu\_burner on the test node (all threads are busy) as we keep adding fully busy 
+neighbors, in comparison to running the same number of busy threads directly on the m5.metal. 
 \begin{figure}[H]
 \begin{tikzpicture}
 \begin{axis}[
     width=13cm,
     height=8cm,
     ylabel={Execution Runtime},
-    xlabel={Number of Threads},
+    xlabel={Number of Busy Threads},
     grid=major,
     xmin=0, 
     xmax=98,
@@ -577,22 +589,27 @@ tool directly on the m5.metal while incrementally increasing the number of busy 
 \noindent
 The first two threads finished the execution in 5.165s on the bare metal instance. However, the 
 first m5.large instance that  was deployed on the dedicated host took 7.06s to 
-finish (no other instances are deployed).
+finish, even though it introduced the first two busy threads on the dedicated host and no other VMs exists.
 This is highly unexpected as we would have expected to see a runtime closer to 5.165s that confirms 
-the promises of AWS of a near bare-metal performance. Instead we notice a difference of almost 36.6 \%. 
-The same is true for the first m5.12xlarge instance where we witness a difference of 36.7 \%. Furthermore, we notice that both plots converge almost towards the same value at 
+the promises of AWS of a near bare-metal performance. Instead we notice a difference of almost 36.6\%. 
+The same is true for the first m5.12xlarge instance where we witness a difference of 36.7\%. Furthermore, we notice that both plots converge almost towards the same value at 
 the maximum number of threads. This strongly undermines the hypothesis that the degradation is due to 
 hypervisor overhead as we would expect to see an even bigger gap (in relation to bare-metal) as 
 more VMs are deployed on the dedicated host. The results for the performance degradation we saw in 
 the previous experiments (Table 2) can be misleading. For bigger instances, we saw a relatively small 
 degradation compared to the smaller instances (large and xlarge). The reason behind this is that the 
 first 12xlarge instance started with a baseline performance that's 13\% worse than the performance 
-of the first m5.large instance.
-The bad performance of the first m5.large instance (test node) suggests that the hypervisor 
-pinned its vCPUs to the same physical core, not taking advantage of other idle physical cores. We 
-assume that this allocation technique aims to avoid contention between the different tenants and 
-isolate the vCPUs of each virtual machine by allocating each pair to the same physical core. To 
-confirm our supposition, we run the cpu\_burner tool in a m5.2xlarge instance, and incrementally 
+of the first m5.large instance. We still, however, can't find a plausible explanation, as to why 
+adding busy and idle neighbors provided the same results on all the experiments. \\
+The poor initial performance of the first m5.large instance (test node) suggests that the hypervisor 
+pinned its vCPUs to the same physical core, not taking advantage of other non-occupied physical cores. 
+We assume that this allocation technique aims to avoid contention between the different tenants/customers 
+and isolate the vCPUs of each virtual machine by allocating each pair to the same physical core. 
+This could be advantageous when the customer rents a unique VM, as it is independent of the neighbors’ 
+workloads. However, it is highly unfavorable when the user has access to a dedicated host, as they 
+are unable to fully utilize the available idle CPU resources of the physical machine, despite paying 
+for all of them. \\
+To confirm our supposition, we run the cpu\_burner tool in a m5.2xlarge instance, and incrementally 
 increase the number of busy threads. The results can be seen in the following figure. 
 \begin{figure}[H]
 \centering
@@ -645,9 +662,42 @@ levels we witnessed on figure \ref{fig::metal_vs_VMs}.
 
 \subsection{m6i family}
 It's interesting to see whether and to what extent the behavior we saw in the m5 family is present on 
-the m6i family. The m6i family runs on the 3rd Generation Intel Xeon Scalable processor. We start 
-directly by analyzing the execution runtime of parallel threads on the bare-metal offering of the m6i 
-family, i.e., m6i.metal. The results of the experiment can be seen in the following figure. 
+the m6i family. The m6i family runs on the 3rd Generation Intel Xeon Scalable processor. 
+We investigated the maximum performance degradation that can happen on the test nodes from adding 
+idle and busy VMs with different instance types. 
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c }
+ Instance type & large & xlarge & 2xlarge & 4xlarge \\
+ \hline
+ Maximum Nodes & 64 & 32 & 16 & 8  \\
+ \hline
+Degradation (Busy) \% & 1.48 & 1.6 & 1.74 & 2.3  \\ 
+\hline 
+Degradation (Idle) \% & 0.05 & 0.06 & 0.06 & 0.07  \\ 
+\end{tabular}
+\end{center}
+\caption{Maximum achievable performance degradation on our test node across various m6i instance types}
+\label{tab::max_m6i}
+\end{table}
+\noindent
+The difference from the previous experiments with the m5 family is that we notice a difference between 
+adding idle or busy neighbors. Adding idle neighbors always results in a sub 0.1\% performance 
+degradation which is practically insignificant. This difference between busy and idle instances can't be 
+assigned to hypervisor overhead alone as we notice a sub 0.1\% overhead when adding busy instances
+on the m6g dedicated host that uses the same Nitro v2 Hypervisor.\\
+These series of experiments can be misleading in 
+suggesting that the performance degradation for the m6i family is better than m5 seeing the percentages. 
+However, in these experiments, all the instance types started from nearly the same nominal performance 
+level, which is roughly 2\% away from the highest runtime possible on the metal instance (128 busy 
+threads). This explains the small levels of performance degradation we witnessed in comparison to the m5 family 
+where the m5.large and m5.xlarge instances started with a relatively better (nominal) performance than 
+the other types resulting in a bigger performance degradation in comparison to the other types. 
+We now analyze the execution runtime of busy threads directly on the m6i.metal instance, in comparison
+to to the test node while adding busy 4xlarge neighbors. At 128 threads, both the m6i metal and the 
+test nodes had the same execution runtime, which supports the claim that the difference between 
+busy and idle neighbor in Table \ref{tab::max_m6i} is not solely due to hypervisor overhead.  
+
 \begin{figure}[H]
 \begin{tikzpicture}
   \begin{axis}[
@@ -718,107 +768,108 @@ of 20.9\% we witness here and 25.22\% using m5.metal. The maximum performance de
 m6i.metal is less than m5.metal, reaching 31.85\% here in comparison to 53\%. Over the first 64 
 threads (\begin{math}n/2\end{math}), we notice very small performance degradation of 0.35\%, in 
 comparison to 13.2\% on the m5.metal instance (over the first 48 threads). In this experiment as well, 
-we notice that the the first m6i.4xlarge has an intial performance worse 26.7 \% than deploying the 
-threads natively on the bare-metal instance.
-We also investigated the maximum performance degradation that can happen on the different VMs and 
-summarized the results in the following table. 
+we notice that the the first m6i.4xlarge has an intial performance 26.7\% worse than deploying the 
+threads natively on the bare-metal instance. We assume that the same vCPU distribution happens with this 
+host as explained for the m5 host. \\
+We investigate whether this behavior also exists on processors from other vendors 
+that support multi-threading such as some AMD processors.
+\subsection{m6a family}
+The m6a host features the AMD EPYC 7R13 Processor that also support \ac{SMT} with two threads per core.
+
 \begin{table}[H]
 \begin{center}
-\begin{tabular}{ c|c|c|c|c|c }
+\begin{tabular}{ |c|c|c|c|c|c }
  Instance type & large & xlarge & 2xlarge & 4xlarge \\
  \hline
- Maximum Nodes & 64 & 32 & 16 & 8  \\
+ Maximum Nodes & 96 & 48 & 24 & 12  \\
  \hline
-Degradation (B) \% & 1.48 & 1.6 & 1.74 & 2.3  \\ 
+Degradation (Busy) \% & 10 & 9.5 & 11.1 & 11.4  \\ 
 \hline 
-Degradation (I) \% & 0.05 & 0.06 & 0.06 & 0.07  \\ 
+Degradation (Idle) \% & 0.05 & 0.06 & 0.06 & 0.05  \\ 
 \end{tabular}
 \end{center}
-\caption{Maximum achievable performance degradation on our test node across various M5 instance types (V)}
+\caption{Maximum achievable performance degradation on our test node across various m6i instance types}
+\label{tab::max_m6a}
 \end{table}
-\noindent
-The difference here from the experiments with the m5 family is that we notice a difference between adding 
-idle or busy neighbors. Adding idle neighbors always results in a sub 0.1\% performance degradation which 
-is practically insignificant. these series of experiments can be misleading in suggesting that the 
-performance degradation for the m6i family is better than m5 seeing the percentages. However, 
-in these experiments, all the instance types started from nearly the same nominal performance level, 
-which is only 2\% away from the highest runtime possible on the metal instance (128 busy threads). 
-This explains the small levels of performance degradation we witnessed in comparison to the m5 family 
-where the m5.large and m5.xlarge instances started with a relatively better (nominal) performance than 
-the other types resulting in a bigger performance degradation in comparison to the other types. \\
-It's very interesting whether this behavior also exists on other CPU that support multi-threading such 
-as AMD. For this we repeat the experiment using the m6a instance. 
-\subsection{m6a family}
+
+
 \begin{figure}[H]
-\centering
 \begin{tikzpicture}
 \begin{axis}[
-    width=12cm,
-    height=7cm,
-    xlabel={Number of Threads},
-    ylabel={\% Performance Degradation},
-    grid=both,
-    xtick distance=16,
+    width=13cm,
+    height=8cm,
+    ylabel={Execution Runtime},
+    xlabel={Number of Busy Threads},
+    grid=major,
     xmin=0, 
-    enlargelimits=0.05,
-    legend style={at={(0.5,-0.25)}, anchor=north, legend columns=2}
+    xmax=192,
+    xtick distance= 16,
+    legend pos=south east
 ]
 
+\addlegendentry{m6a.metal}
+\addplot[
+    color=blue,
+    mark= *,
+    thick,
+] coordinates {
+(1, 6.47)
+(16, 6.50)
+(32, 6.70)
+(48, 6.70)
+(64, 6.71)
+(80, 6.72)
+(96, 6.72)
+(97, 7.06)
+(112, 7.20)
+(128, 7.34)
+(144, 7.51)
+(160, 7.67)
+(176, 7.88)
+(192, 7.9)
+ };
+
+\addlegendentry{m6a.4xlarge}
 \addplot[
     color=green,
-    mark=*,
-    thick
+    mark= *,
+    thick,
 ] coordinates {
-(1, 0.000)
-(8, 0.448)
-(16, 0.448)
-(24, 3.634)
-(32, 3.681)
-(40, 3.650)
-(48, 3.650)
-(56, 4.006)
-(64, 3.727)
-(72, 3.727)
-(80, 3.959)
-(88, 4.021)
-(96, 3.897)
-(97, 9.032)
-(104, 9.867)
-(112, 11.274)
-(120, 12.187)
-(128, 13.517)
-(136, 14.615)
-(144, 16.069)
-(152, 17.229)
-(160, 18.590)
-(168, 20.152)
-(176, 21.775)
-(184, 22.270)
-(192, 23.569)
-
-};
-\addlegendentry{m6a.metal}
+(16, 7.09)
+(32, 7.09)
+(48, 7.09)
+(64, 7.09)
+(80, 7.09)
+(96, 7.09)
+(112, 7.09)
+(128, 7.43)
+(144, 7.44)
+(160, 7.44)
+(176, 7.90)
+(192, 7.91)
+ };
 
 \end{axis}
 \end{tikzpicture}
-\caption{Effect of adding threads on the CPU performance using m6a.metal and the cpu\_burn tool (V)} 
+\caption{Performance of the test node in comparison to running the threads natively on m5.metal}
+\label{fig::m6a_metal_vs_VMs}
 \end{figure}
-We notice a pattern similiar to that of the intel processors. However the maximum performance is 
-less important and is equal to 23.5 \%. When adding the 97th busy thread, we witness a degradation 
-of 5.2\%. We notice that the biggest part of the degradation happens in the second half of adding the 
-busy threads, i.e., from thread 97 to 192. We see almost a steady upwards increasing line. \\
-It's interesting to see the behavior of the virtual machines on the m6a dedicated host. 
+\noindent
+We notice a pattern similiar to that of the Intel processors. However the final performance degradation is 
+less important and is equal to 23.5 \%. When adding the 97th ($n/2 + 1$) busy thread, we witness a degradation 
+of 5.2\%, which is not very important in comparison to the m5 and the m6i dedicated hosts. 
+We notice that the biggest part of the degradation happens in the second half of adding the 
+busy threads, i.e., from thread 97 to 192. We see almost a steady upwards increasing line. 
 
 \section{Contention under Single Threaded Core Processors}
 \subsection{m6g family}
-We now examine CPU contention on hosts that do not support Hyper-Threading.
-For this, we used the m6g dedicated host that runs on the AWS Graviton2 pro-
+We now examine CPU contention on the m6g dedicated host that runs on the AWS Graviton2 pro-
 cessor. It also uses AWS Nitro 2 Hypervisor, which is the same as the m5 family. This host has 
 64 physical cores and therefore 64 vCPUs. The following table summarizes the instance types 
 we used in the following experiments.
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{l|c|c}
 \hline
 \textbf{Instance Type} & \textbf{vCPUs} & \textbf{RAM (GiB)} \\
 \hline
@@ -834,12 +885,8 @@ m6g.8xlarge  & 32 & 128 \\
 \label{tab:m6g_specs}
 \end{table}
 \noindent
-All the following experiments were conducted in the us-east-2a zone. We deployed a test node in 
-the dedicated host and then incrementally added neighbors that are fully utilizing their
-CPU. We then analyze the effect of adding these neighbor on the CPU speed
-metric of the test node by comparing the runtime of the cpu\_burn command. For our first experiment 
-we used m6g.2xlarge nodes, of which the dedicated host can provision 8 instances. The results 
-can be seen in the following figure. 
+For our first experiment we used m6g.2xlarge nodes, of which the dedicated host can provision 8 
+instances. The results can be seen in the following figure. 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -874,7 +921,7 @@ can be seen in the following figure.
 
 \end{axis}
 \end{tikzpicture}
-\caption{Effect of adding neighbors on the CPU performance with m6g.2xlarge instances using the cpu\_burn tool (V)}
+\caption{Effect of adding busy neighbors on the CPU performance with m6g.2xlarge instances using the cpu\_burn tool}
 \end{figure}
 \noindent
 We notice a very small and insignificant performance  degradation of 0.05\%. This should be due 
@@ -888,10 +935,10 @@ At each level, we repeated the cpu\_burn command 10 times and then considered th
  \hline
  Maximum Nodes & 64 & 32 & 16 & 8 & 4 & 2 \\
 \hline
-Degradation (b) \%& 0.05 & 0.03 & 0 & 0 & 0 & 0  \\
+Degradation (Busy) \%& 0.05 & 0.03 & 0 & 0 & 0 & 0  \\
 \end{tabular}
 \end{center}
-\caption{Maximum achievable performance degradation on our test node across various M5 instance types (V)}
+\caption{Maximum achievable performance degradation on our test node across various m6g instance types}
 \end{table}
 \noindent
 The results of our experiment prove that the AWS Nitro hypervisor causes practically no overhead and 
@@ -950,10 +997,15 @@ The results can be seen in the following figure.
 
 \end{axis}
 \end{tikzpicture}
-\caption{Effect of adding threads on the CPU performance using m6g.metal and the cpu\_burn tool (V) }
+\caption{Effect of adding threads on the CPU performance using m6g.metal and the cpu\_burn tool}
 \end{figure}
 \noindent
 We notice a very little performance degradation on the total execution runtime, reaching a maximum 
 of 0.33\% at 64 threads. This result is expected as each new thread is assigned to an independent 
 physical core. since the m6g.metal has 64 physical cores, the added threads before 64 should be 
-assigned to an idle core and should practically have no effect on the other threads.
+assigned to an idle core and should practically have no effect on the other threads. We even notice 
+that the m6g.2xlarge had better performance throughout the experiment. However it's a very 
+small difference, which is almost insignificant. 
+
+
+
