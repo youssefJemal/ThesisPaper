@@ -1,36 +1,5 @@
 \chapter{Methodology}
 
-\section{CPU Benchmarking}
-To generate CPU stress, we used sysbench \cite{sysbench}, which is a powerful cross-architecture tool, 
-that can be used for Linux performance benchmarks. We used sysbench as a 
-CPU stressing tool. When running with the CPU option, it performs the deterministic task of checking 
-all prime numbers until reaching 10000 (default value) by doing standard division of the current number 
-by all numbers between 2 and its square root \cite{gentoo_sysbench}. The number of the worker threads 
-can be specified as an argument. The tool allows the specification of the aggregated number of events that 
-should be performed by the created threads. We then use the total execution runtime as a comparison metric 
-between the different experiments. For comparison purposes, we also developed our own CPU stressing 
-tool called \textit{cpu\_burn} written in the C language. The program takes two arguments, the first 
-being the number of operations that each created thread will perform and the second representing 
-the number of worker threads. It then returns the total wallclock runtime that was needed for the 
-execution of this job. 
-We compiled the program using GCC with optimization level -O0, to ensure that no compilier optimizations
-altered the program's behavior. Each thread executes the function defined under \texttt{perform\_work()}. 
-The argument \texttt{work->operations} is specified by the user, as stated previously.
-
-\begin{figure}[H]
-\begin{lstlisting}[caption={Workload of the cpu\_burn tool}]
-void* perform_work(void* arg) {
-    ThreadWork* work = (ThreadWork*)arg;
-    double x = 0.0;
-    for (long long i = 0; i < work->operations; ++i) {
-        x += i * 0.000001;
-    }
-    work->result = x;
-    return NULL;
-}
-\end{lstlisting}
-\end{figure}
-
 \section{Network I/O Benchmarking}
 \subsection{Throughput}
 For network I/O stress, we used iPerf3 \cite{iperf}. It provides a benchmark for measuring network 
