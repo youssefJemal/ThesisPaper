@@ -15,7 +15,7 @@ altered the program's behavior. Each thread executes the function defined under 
 As stated previously, The argument \texttt{work->operations} is specified by the user.
 
 \begin{figure}[H]
-\begin{lstlisting}[caption={Workload of the cpu\_burn tool}]
+\begin{lstlisting}[caption={Workload of the \textit{cpu\_burn} tool}]
 void* perform_work(void* arg) {
     ThreadWork* work = (ThreadWork*)arg;
     double x = 0.0;
@@ -77,8 +77,8 @@ Figure \ref{fig:cpu_exp} provides a visualization of the experiment.
   \label{fig:cpu_exp}
 \end{figure}
 \noindent
-For comparison, the experiment was repeated but with idle neighbors instead of busy. In order 
-to interpret the results better, we also natively ran the benchmarking tools on the metal 
+For comparison, the experiment was repeated but with idle neighbors instead of busy. To identify the cause of the 
+observed degradation, we also natively ran the benchmarking tools on the metal 
 instance of each family. Metal instances run directly on the physical host without the need 
 for the hypervisor. They provide the user with access to all the physical 
 CPUs. The behavior of the metal instance will not be analyzed in depth, 

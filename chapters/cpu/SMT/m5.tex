@@ -101,7 +101,7 @@ This experiment alone does not allow us to pinpoint the reason behind the perfor
 Potential reasons could be physical core co-location between the neighbors and the test node or 
 hypervisor overhead. The latter is very unlikely, as the Nitro system, along with hardware-assisted 
 virtualization should introduce a very small overhead. 
-We repeat the same experiment but, we add idle VMs this time. 
+We repeat the same experiment but adding idle VMs. 
 Figure \ref{fig::m5.2xlarge_idle} summarizes the results. 
 
 \begin{figure}[H]
@@ -169,7 +169,7 @@ Figure \ref{fig::m5.2xlarge_idle} summarizes the results.
 We notice the exact same degradation pattern of the earlier experiment. This result is unexpected
 and undermines the hypothesis that the performance degradation is due to physical core co-location between the different 
 tenants as we would have expected the effect to be less pronounced when adding idle VMs. \\
-To investigate this further, we repeat the experiment using m5.large instances, of which the dedicated host can 
+To explore this further, we repeat the experiment using m5.large instances, of which the dedicated host can 
 provision 48. The results of our experiment can be seen in Figure \ref{fig::m5.large}. In this 
 case as well, adding busy or idle neighbors provided the exact same results.  
 
@@ -310,15 +310,18 @@ the test node using m5.large instances}
 \end{figure}
 
 \noindent
-In this experiment as well, we notice the same performance degradation between the two tools. The second 
+We observe the same performance degradation pattern between the two tools. The second 
 neighbor has introduced the first performance degradation of roughly 6\%. The 4th neighbor increased 
 this degradation to 9,5\%. The runtime then remained constant for the next 23 neighbor, as they had no 
 effect on our test node. The 28th neighbor then introduced the last performance degradation reaching the 
 maximum performance degradation of 13\% with both tools. \\
 To have a full picture of the performance degradation across the different instance types, we repeated 
 the experiment using the remaining instance types and summarized the results in table \ref{tab::all_m5}.
-The results are always similar between the two tools. From this point, we'll only prcoceed 
-with the cpu\_burn tool. Adding idle or busy neighbors constantly provided the same results. 
+The results are always similar between the two tools. From this point onward, we'll proceed 
+exclusively with the \textit{cpu\_burn} tool. Adding idle or busy neighbors constantly provided the 
+same results. At each level, we repeated the \textit{cpu\_burn} command 10 times and then considered the 
+average of these 10 values. 
+ 
 \begin{table}[H]
 \centering
 \begin{tabular}{ |c|c|c|c|c|c|c }
@@ -336,16 +339,10 @@ Degradation (Busy/Idle) \% & 13 & 13 & 4.8 & 3.25 & 0  \\
 The biggest performance degradation happens when using large and xlarge instances with almost the same 
 percentage of 13\%. It then drops to 5\% for the 2xlarge type, as seen in figure \ref{fig::m5.2xlarge_busy}.
 We notice a further decrease in the performance degradation for the 4xlarge type to 3.25\% and then its complete 
-absence when using the 12xlarge type, of which the dedicated host can only provision 2. \\
-DISCUSSION \\ 
-In their paper, Han et. al. \cite{contention} argue that this CPU performance degradation is due to CPU 
-context switching overhead that's caused by the KVM (Nitro) scheduler. Even though this hypothesis 
-seems convincing, since the degradation decreases as the number of tenants decreases (Table 2), 
-We think that it's very unlikely, as the Nitro System should provide a near bare-metal performance. \\
-DISCUSSION \\
+absence when using the 12xlarge type, of which the dedicated host can provision 2. \\
 To investigate this issue further we run the experiment directly on the bare-metal m5.instance. 
-For this, we use the cpu\_burn tool and incrementally increase the number of threads that are created 
-and examinewhether we witness any performance degradation. Figure \ref{fig::m5_metal} visualizes 
+For this, we use the \textit{cpu\_burn} tool and incrementally increase the number of threads that are created 
+and examine whether we witness any performance degradation. Figure \ref{fig::m5_metal} visualizes 
 the outcome of the experiment. 
 \begin{figure}[H]
 \centering
@@ -384,7 +381,7 @@ the outcome of the experiment.
 
 \end{axis}
 \end{tikzpicture}
-\caption{Runtime impact of incrementally increasing threads in the cpu\_burn command on an m5.metal instance} 
+\caption{Runtime impact of incrementally increasing threads in the \textit{cpu\_burn} command on an m5.metal instance} 
 \label{fig::m5_metal}
 \end{figure}
 \noindent
@@ -395,7 +392,7 @@ threads, resulting in resource contention, as the execution resources are not du
 We also notice a very interesting point. In all our previous experiments, the instances 
 initially started with a nominal baseline performance significantly worse than running the 
 exact number of threads directly on the metal instance. Figure \ref{fig::metal_vs_VMs} compares 
-the runtime of cpu\_burner on the test node (all threads are busy) as we keep adding fully busy 
+the runtime of \textit{cpu\_burn} on the test node (all threads are busy) as we keep adding fully busy 
 neighbors, in comparison to running the same number of busy threads directly on the m5.metal. 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -531,7 +528,8 @@ neighbors, in comparison to running the same number of busy threads directly on 
  \addlegendentry{m5.12xlarge}
 \end{axis}
 \end{tikzpicture}
-\caption{Performance of the test node in comparison to running the threads natively on m5.metal}
+\caption{Performance of the test node (while incrementally adding busy neighbors) in comparison 
+to running the threads natively on m5.metal}
 \label{fig::metal_vs_VMs}
 \end{figure}
 \noindent
@@ -556,7 +554,7 @@ This could be advantageous when the customer rents a unique VM, as it is indepen
 workloads. However, it is highly unfavorable when the user has access to a dedicated host, as they 
 are unable to fully utilize the available idle CPU resources of the physical machine, despite paying 
 for all of them. \\
-To confirm our supposition, we run the cpu\_burner tool in a m5.2xlarge instance, and incrementally 
+To confirm our supposition, we run the \textit{cpu\_burn} tool in a m5.2xlarge instance, and incrementally 
 increase the number of busy threads. The results can be seen in the following figure. 
 \begin{figure}[H]
 \centering
@@ -589,7 +587,8 @@ increase the number of busy threads. The results can be seen in the following fi
 
 \end{axis}
 \end{tikzpicture}
-\caption{Effect of adding busy threads on the CPU performance using m5.2xlarge and the cpu\_burn tool} 
+\caption{Effect of adding busy threads on the CPU performance of a m5.2xlarge instance using \textit{cpu\_burn}} 
+\label{fig::m5_inter}
 \end{figure}
 \noindent
 We can notice that the biggest degradation happens when adding the 5th thread, which strongly indicates 
