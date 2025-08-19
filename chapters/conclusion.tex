@@ -1,1 +1,26 @@
 \chapter{Conclusion}\label{chapter:conclusion}
+
+This thesis contributes empirical evidence of the worst-case impact of VM co-location on AWS instances, 
+with a focus on CPU and network I/O.
+For CPU, we found that \ac{SMT}-enabled hosts are particularly susceptible to 
+performance degradation. Among the evaluated families, m5 and m6a were the most affected, 
+with performance loss reaching 13\%.
+In contrast, the m6i family exhibited only minor degradation of less than 2\%.
+The m5 family also showed unexpected performance degradation even with idle neighbors. \
+Furthermore, our results suggest that AWS enforces vCPU isolation between virtual machines, 
+that has a negative impact on the baseline performance of these instances. \\ 
+These findings highlight that even with continued improvement to virtualization, considerable 
+resource degradation is still possible. Hardware features such as \ac{SMT}
+can introduce non-trivial performance penalties. It's crucial that AWS
+customers consider these characteristics when choosing an instance type for a CPU-intensive workload. 
+m5 instance users seem to be at a disadvantage, since CPU performance is degraded
+solely by the presence of neighbors. However, Graviton instances, such as the m6g family,
+provide a (nearly) complete isolation between tenants, offering consistent and reliable CPU performance.\\ 
+The thesis also investigated network I/O contention on the m5 family and its effect 
+on throughput and latency. Throughput degradation can reach 30\% for large instances, relative 
+to their baseline bandwidth. For latency, the measurements had high variability but we discovered that 
+a degradation of 217\% is possible. \\
+Throughput and latency degradation are mostly dependent on the bandwidth of the underlying 
+dedicated host. For network-intensive applications, users should opt for network-optimized
+instances that provide higher bandwidth. Otherwise, co-location effects could severely impact 
+application performance. 
