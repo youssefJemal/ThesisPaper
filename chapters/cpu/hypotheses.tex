@@ -1,0 +1,18 @@
+\section{Hypotheses}
+The following hypotheses guide our investigation of CPU performance degradation:
+
+\begin{enumerate}[label=H\arabic*:, leftmargin=*, align=left]
+    \item Overhead introduced by virtualization, such as hypervisor overhead, is expected 
+    to be minimal and practically insignificant. The substantial improvements introduced 
+    by hardware-assisted virtualization and the Nitro System support this assumption.
+
+    \item For hosts that support \ac{SMT}, physical core co-location between the 
+    co-tenants will likely create measurable performance degradation. If the vCPUs of the 
+    test node are mapped to several physical cores, we should witness a gradual performance 
+    loss, as busy neighbors start sharing these cores with the test node.
+
+    \item Frequency scaling can be a reason for performance degradation.  
+    When the test node runs alone on the dedicated host, it should operate at peak frequency and 
+    achieve optimal performance. As busy neighbors are added, the processor's average frequency
+    is likely to decrease due to power and temperature limits, leading to performance loss.
+\end{enumerate}

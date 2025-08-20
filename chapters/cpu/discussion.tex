@@ -1,38 +1,30 @@
 \section{Discussion}
-The m5 instances are prone to CPU contention, with the percentage of performance 
-degradation ranging from 3.25\% (4xlarge) to 13\% (large) (Table \ref{tab::all_m5}). 
-Particularly for this family, experiments show a degradation caused by adding idle neighbors, on par
-with the degradation from adding busy neighbors. In their work, Han et al. \cite{characterizing_public} 
+The m5 instances are prone to CPU contention, with performance degradation
+ranging from 3.25\% (4xlarge) to 13\% (large) (Table \ref{tab::all_m5}). 
+For this family in particular, experiments show that degradation caused by adding idle neighbors is on par
+with the degradation from adding busy neighbors. Han et al. \cite{characterizing_public} 
 observed this behavior and were able to improve sysbench performance by 20.81\% 
-on m5d.large instance by shutting down idle VMs. This behavior seems unique to the m5 family as 
-they were not able to replicate it on c3 and c4 families. In our work as well, m6i and m6a families  
-did not exhibit this behavior, as idle VMs caused sub 0.05\% degradations, which are practically 
-insignificant. Han et al. \cite{characterizing_public} argue that this performance degradation is 
-caused by context switching overhead that's performed by the KVM (Nitro) scheduler.
-We think that this is very unlikely, since the Nitro System provides a near bare-metal performance.
-Experiments with the m6g family, that features the same hypervisor as the m5 dedicated host, 
-support this conclusion (see Table \ref{tab::max_m6g}).
-m6i instances revealed a minimal degrdation effect, with performance degradation below 2.5\%
-across all instance  types (see Table \ref{tab::max_m6i}). However, this was not the case for the m6a 
-instances that exhibited a degradation close to 10\% across all tested instance 
-types.  \\
-For dedicated hosts that support \ac{SMT}, we constantly observe that the performance of the first 
-deployed VM is significantly worse than the performance of running the same number of busy threads
-directly on the metal offering. This intital difference reached 36\% on m5, 27\% on m6i, and 9.3\% on m6a
-using large instances. A plausible explanation is that instances with $n$ vCPUs from these families have 
-access to only $n/2$ physical cores, which is supported by the results in figure \ref{fig::m5_inter}. \\
-The metal instance across these 3 families demonstrated a significant degradation when incrementally
-adding busy threads directly on the physical CPUs: 53\% on m5.metal, 31.85\% on m6i.metal, and 23.5\% 
-on m6a\%. This is mainly but not only caused by core co-location of the different threads. 
-The performance degradation, we witnessed for the test VM in the experiments is basically the 
-VM following the trend of the performance degradation of the underlying CPU, but with a worse start 
-as its vCPUs share the physical cores.  
-The degradation reflects the performance, i.e., it's a characteristic of the 
-underlying processor. Virtualization overhead does not contribute to this degradation. 
-This is supported, by the fact that  the test node runtime and the metal instance runtime always 
-converge to the same value when the the metal instance and the dedicated host are at full capacity. \\
-For the m6g dedicated host, we witnessed almost no CPU contention, when adding busy neighbors, with 
-all values below 0.05\%. This was expected as the AWS Graviton processor provides better vCPU 
-isolation with each logical core mapped to a physical core. The neighbors still share 
-Last Level Cache and memory system, but that does not seem to have an effect as our benchmarks are 
-CPU-bound. 
+on an m5d.large instance by shutting down idle VMs. This behavior seems unique to the m5 family as 
+they could not replicate it on the c3 and c4 families. \\ 
+The m6i family showed only minor degradation with values around 2\%. In contrast, the m6a instances 
+showed more important degradation with values reaching 11\%. In both families, 
+idle instances practically did not affect the test node's performance. \\
+Han et al. \cite{characterizing_public} suggested that context switching overhead introduced
+by the Nitro scheduler could create performance degradation.
+However, this explanation is implausible, since the Nitro System provides a near bare-metal 
+performance as seen for the m6g family (see Figure \ref{fig::m6g_metal_vs_VMs}). 
+Thus, our first hypothesis is accepted. 
+The second hypothesis is rejected, since we found that instances with $n$ vCPUs running on an SMT-enabled host only have 
+access to $n/2$ physical cores, which excludes any possible degradation caused by physical core 
+co-location between different co-tenants. This distribution, however,  affects the initial performance 
+of deployed VMs, as they cannot benefit from non-occupied cores. This is reflected in the initial 
+difference between the runtime of the first deployed instance on the dedicated host and the runtime 
+of running the threads directly on the metal instance. This difference reached 36\% on m5, 27\% on m6i, 
+and 9.3\% on m6a using large instances. \\
+We argue that the observed performance degradation when adding busy neighbors is caused 
+by the frequency scaling feature. We confirmed this in our experiment with the m7a family, 
+where we measured a decrease in the average frequency of the busy cores as the number of busy 
+threads are increase (see Figure \ref{tab::m7a}). This finding validates the third hypothesis. 
+For the m6g dedicated host, we witnessed almost no CPU contention with degradation 
+values lower than 0.05\%. This behvaior was expected, since Graviton processors do not support frequency
+scaling, and the virtualization overhead is minimal.

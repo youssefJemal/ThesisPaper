@@ -1,4 +1,4 @@
-\subsection{m6a family}
+\subsection{m6a Family}
 The m6a host features the AMD EPYC 7R13 Processor. Table \ref{tab::max_m6a} captures the maximum 
 achievable performance degradation on the test node while adding busy or idle neighbors. 
 
@@ -34,6 +34,7 @@ the m6a.metal instance.
     ylabel={Execution Runtime},
     xlabel={Number of Busy Threads},
     grid=major,
+    ymin=0,
     xmin=0, 
     xmax=192,
     xtick distance= 16,
@@ -84,12 +85,12 @@ the m6a.metal instance.
 
 \end{axis}
 \end{tikzpicture}
-\caption{Performance of the test node in comparison to running the threads natively on m5.metal}
+\caption{Performance of the test node (while incrementally adding busy neighbors) in comparison to running the threads natively on m6a.metal}
 \label{fig::m6a_metal_vs_VMs}
 \end{figure}
 \noindent
-We notice a pattern similiar to that of the Intel processors. However, the overall performance degradation is 
-less important and is equal to 23.5\%. For the first 96 threads, we observe a performance 
+The overall performance degradation for the metal instance is equal to 23.5\%. 
+For the first 96 threads, we observe a performance 
 degradation of 3.9\%. When adding the 97th thread ($n/2 + 1$), we witness an additional 
 degradation of 5.2\%, which is less significant than the degradation we saw at the same level for 
 m5 and the m6i dedicated hosts (respectively 25\% and 20\%). 
@@ -99,4 +100,9 @@ from 9\% to 23\%. The degradation on the second half was also present on the m5 
 with respectively 8.63\% and 7\%. 
 The first m5.4xlarge (test node) had an initial runtime 9.3\% worse than running \textit{cpu\_burn} with 
 16 threads on the m6a.metal instance, which implies the same mapping of the vCPUs across the physical 
-cores as discussed for the Intel processors. \\ 
+cores as discussed previously. \\ 
+We have now established that the witnessed degradation in the different families is not caused by 
+physical core co-location, as the vCPUs of each VM are isolated. It is also unlikely that it is caused 
+by virtualization overhead, as the performance of the metal instance and the VM converge toward
+the same value at full capacity. In the following part, we investigate the role of frequency scaling 
+in these performance losses (H3). 

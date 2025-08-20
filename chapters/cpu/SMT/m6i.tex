@@ -1,6 +1,5 @@
-\subsection{m6i family}
-It is worth exploring whether, and to what extent, the behavior we witnessed for the m5 family 
-is present on the m6i family. The m6i family runs on the 3rd Generation Intel Xeon Scalable 
+\subsection{m6i Family}
+The m6i family runs on the 3rd Generation Intel Xeon Scalable 
 processor. We investigated the maximum performance degradation that can happen on the test nodes 
 from adding idle and busy VMs with different instance types. Table \ref{tab::max_m6i} summarizes
 the results.
@@ -25,13 +24,11 @@ adding idle or busy neighbors. Adding idle neighbors always results in a sub 0.1
 degradation which is practically insignificant. This difference between busy and idle instances can't be 
 assigned to hypervisor overhead alone as we notice a sub 0.1\% overhead when adding busy instances
 on the m6g dedicated host that uses the same Nitro v2 Hypervisor, as Table \ref{tab::max_m6g} shows.\\
-These results can be misleading in 
-suggesting that the performance degradation for the m6i family. 
-However, in these experiments, all the instance types started from nearly the same nominal performance 
+In these experiments, all the instance types started from nearly the same nominal performance 
 level, which is roughly 2\% away from the "worst" runtime possible on the metal instance (128 busy 
 threads). This explains the small levels of performance degradation we witnessed in comparison to the m5 family 
 where the m5.large and m5.xlarge instances started with a relatively better (nominal) performance than 
-the other types resulting in a bigger performance degradation in comparison to the other types. 
+the other types resulting in a bigger performance degradation compared to them. 
 We now analyze the execution runtime of busy threads directly on the m6i.metal instance, in comparison
 to to the test node while adding busy 4xlarge neighbors. 
 \begin{figure}[H]
@@ -42,6 +39,7 @@ to to the test node while adding busy 4xlarge neighbors.
     ylabel={Execution Runtime},
     xlabel={Number of Busy Threads},
     grid=major,
+    ymin=0,
     xmin=0, 
     xmax=132,
     xtick distance= 8,
@@ -91,7 +89,8 @@ to to the test node while adding busy 4xlarge neighbors.
 
 \end{axis}
 \end{tikzpicture}
-\caption{Performance of the test node in comparison to running the threads natively on m6i.metal}
+\caption{ Performance of the test node (while incrementally adding busy neighbors) in
+comparison to running the threads natively on m6i.metal}
 \end{figure}
 \noindent
 At 128 threads, both the m6i metal and the 
@@ -99,8 +98,8 @@ test nodes had the same execution runtime, which further supports the claim that
 busy and idle neighbor in Table \ref{tab::max_m6i} is not solely due to hypervisor overhead.  
 We notice the same behavior we witnessed on 1st gen and 2nd gen Intel Xeon Scalable processor from the 
 m5.family. We notice that in both the m5.metal and m6i.metal, the most significant performance degradation 
-happens exactly at    \begin{math}n / 2 + 1\end{math} with n being the maximum number of vCPUs available 
-to the dedicated host. Our hypothesis is that the first \begin{math}n/2\end{math} threads are scheduled 
+happens exactly at    \begin{math}n / 2 + 1\end{math} with n being the maximum number of hyperthreads 
+available. Our assumption is that the first \begin{math}n/2\end{math} threads are scheduled 
 each on an independent physical core. However the \begin{math}n / 2 + 1\end{math} thread needs to share 
 a physical core with another thread, as explained previously. This results in the performance degradation 
 of 20.9\% we witness here and 25.22\% using m5.metal. The maximum performance degradation using this 
@@ -109,6 +108,4 @@ threads (\begin{math}n/2\end{math}), we notice very small performance degradatio
 comparison to 13.2\% on the m5.metal instance (over the first 48 threads). In this experiment as well, 
 we notice that the the first m6i.4xlarge has an intial performance 26.7\% worse than deploying the 
 threads natively on the bare-metal instance. We assume that the same vCPU distribution happens with this 
-host as explained for the m5 host. \\
-We investigate whether this behavior is also present on processors from other vendors 
-that support \ac{SMT}, such as certain AMD models.
+host, as explained for the m5 host. \\

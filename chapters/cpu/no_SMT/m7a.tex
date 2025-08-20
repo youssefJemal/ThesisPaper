@@ -1,0 +1,36 @@
+\subsection{m7a Family}
+The m7a host, powered by the AMD EPYC 9R14 processor, utilizes frequency scaling and has SMT disabled, 
+making it an ideal candidate for investigating the effect of frequency scaling on degradation. 
+We ran the CPU experiment using 4xlarge instances to determine whether any degradation occurs on the 
+test node. As table \ref{tab::m7a} shows, we observe a performance loss of 9.15\% by adding busy neighbors.  
+The metal instance experiences a similar degradation of about 9.3\%. For the metal instance, the initial 
+runtime corresponds to running \textit{cpu\_burn} with 16 threads and final runtime with 192 threads. \\
+Since virtual machines do not have read access to the frequencies of each individual cores, 
+we measured the average CPU frequency of the busy cores on the metal instances.
+Busy cores can be identified by their frequencies exceeding 2.6 GHz, which corresponds to
+the base clock of the AMD EPYC 9R14 processor. With 16 busy threads, we measured an average 
+frequency of 3.7 GHz, which represents the peak frequency. 
+However, at 192 busy thread, we observe a drop to 3.4 GHz in the average frequency (8.1\%). \\ 
+These findings strongly suggest that the observed performance degradation is caused by the 
+frequency scaling mechanism: As more physical cores become busy, the average frequency decreases 
+to adhere with power consumption and temperature limits. This explanation also extends to the 
+previous experiments, since all hosts supported 
+frequency scaling. 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|c|c|c|}
+\hline
+ & \textbf{test node (4xlarge)} & \textbf{m7a.metal} & \textbf{Average frequency} \\
+\hline
+\textbf{Initial runtime (s)} & 6.642 & 6.66 & 3.7 GHz \\
+\hline
+\textbf{Final runtime (s) } & 7.25 & 7.28 & 3.4 GHz \\
+\hline
+\textbf{Degradation} & 9.15\% & 9.3\% & 8.1\% \\
+\hline
+\end{tabular}
+\caption{Runtime and frequency comparison for the test node (4xlarge) and the m7a.metal instance}
+\label{tab::m7a}
+\end{table}
+
