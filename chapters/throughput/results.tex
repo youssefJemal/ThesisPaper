@@ -1,14 +1,7 @@
-\subsection{m5 family}
-Unlike other resources such as CPU and RAM, which are statically divided between the different tenants 
-based on instance type, network bandwidth is shared among the different co-tenants without a fix
-specification of the expected bandwidth per tenant. Typically, for instances with 16 vCPUs or less, 
-AWS specifies the bandwidth upper bound, e.g., "Up to 10 Gbps" \cite{network_bandwidth}. However these 
-instances still have a baseline bandwidth. A network I/O credit mechanism is employed that 
-allows the instance to use burst bandwidth for a short period of time, ranging from 5 to 60 minutes,
-depending on the instance type \cite{network_bandwidth}. \\ 
-We'll analyze throughput contention on instances belonging to the m5 family. Key
-performance metrics for the m5 dedicated host can be found in Table \ref{tab:dedicated-hosts}.
-Table \ref{tab:m5_spec} depicts the most important network related specifications for the different 
+\subsection{m5 Family}
+This subsection analyzes throughput contention on instances belonging to the m5 family. KPIs 
+for the m5 dedicated host can be found in Table \ref{tab:dedicated-hosts}.
+Table \ref{tab:m5_spec} depicts the most important network-related specifications for the different 
 instance types.
 \begin{table}[H]
 \centering
@@ -25,22 +18,14 @@ m5.12xlarge  & 72 & 12 & 12   \\
 m5.metal     & 96 & 25 & 25   \\
 \bottomrule
 \end{tabular}
-\caption{Specifications of m5 Instance Types (BW = Bandwidth)}
+\caption{Specifications of m5 instance types (BW = Bandwidth)}
 \label{tab:m5_spec}
 \end{table}
 \noindent
-For single flow traffic, the maximum burst bandwidth of 10 Gbps is only attainable when the the client and 
-the server reside in the same cluster group. For instances who are not in the same cluster group, single flow 
-traffic is limited to 5 Gbps \cite{network_bandwidth}.  The clients and the servers 
-can't be in the same cluster groups since they are in different dedicated hosts. This means that the 
-single-flow traffic between the client and the servers is limited to 5 Gbps. To bypass this restriction, 
-we create two client connections, that can be achieved using the P option in the iPerf3 tool. \\
-Bandwidth throttling for smaller instances takes at least 5 minutes to take effect, during which the instance
-has access to 10 Gbps burst bandwidth. We conduct our experiments in this time window. It is particularly 
-interesting to observe the extent of the network degradation in comparison to the baseline bandwidth 
-for each instance size. The first experiment features the m5.4xlarge instance type, 
-of which the dedicated host can accomoadate 6. To provide a better 
-visualization of the results, we present each node in an independent graph.
+The first experiment features the m5.4xlarge instance type. 
+The maximum number of VMs on the host is 6.
+To provide a clearer visualization of the results, we present each node in a separate graph in 
+Figure \ref{fig:eachalone}.
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -55,7 +40,7 @@ visualization of the results, we present each node in an independent graph.
     width=6cm,
     height=4cm,
     xlabel={Number of Nodes},
-    ylabel={Throughput},
+    %ylabel={Throughput (Gbps)},
     title style={yshift=-1ex},
     ymin=2, ymax=10,
     xtick distance = 1, 
@@ -71,7 +56,7 @@ visualization of the results, we present each node in an independent graph.
 \nextgroupplot[title={Node 2},]
 \addplot[mark=square*, red, thick] coordinates {(1,9.96) (2,7.83)(3,5.97) (4,4.98) (5, 4.17)};
 % Node 3
-\nextgroupplot[title={Node 3}]
+\nextgroupplot[title={Node 3}, ylabel = {Throughput (Gbps)}]
 \addplot[mark=triangle*, green, thick] coordinates {(2,8.00) (3,5.98) (4,4.91) (5, 4.17)};
 
 
@@ -87,33 +72,33 @@ visualization of the results, we present each node in an independent graph.
 \addplot[mark=diamond*, orange, thick] coordinates {(5,4.25)};
 \end{groupplot}
 \end{tikzpicture}
-\caption{UDP Throughput of m5.4xlarge nodes when incrementally increasing the tenants}
-\label{fig:boxplot}
+\caption{UDP Throughput of m5.4xlarge nodes when incrementally increasing the busy tenants}
+\label{fig:eachalone}
 \end{figure}
 
 \noindent
-As expected, the first and the second clients, when alone on the dedicated host had access to a burst 
-bandwidth of 9.96 Gbps. The third tenant caused the average throughput to drop to 7.96 Gbps, while the 
-addition of a fourth neighbor further reduced it to 5.96 Gbps. We practically notice no variation between 
-the different nodes. The fifth neighbor reduced the throughput of all the co-tenants to practically 
-the baseline bandwidth of the m5.4xlarge (5 Gbps) with an average throughput of 4.94 Gbps. The 6th node 
-introduced the first significant decrease under the baseline bandwidth to an average of 4.12 Gbps, 
-which is 17.6\% less than the baseline bandwidth. Starting from the the 3rd tenant, the sum 
-of the throughput across all the nodes is always around 24.7 Gbps.  This was expected as the bandwidth 
-of the m5.metal is 25 Gbps, which should represent the upper limit for the sum of the throughputs of all the nodes
-residing on the same dedicated host. For the xlarge, 2xlarge, and 4xlarge types, the product of the 
-maximum number of the instances on the dedicated host multiplied by the baseline bandwidth of the respective
-instance type (5 Gbps) is 30 Gbps, which is 16.7\% smaller than the possible bandwidth of 25 Gbps. 
-This explains the average degradation of 17\% we saw in the previous experiment. The same behavior
-should be expected when using xlarge and 2xlarge instances. For the large instance type, however, the 
-product is equal to
-\begin{math} 48 \times 0.75 = 36\end{math} Gbps. 
-25 Gbps is 30\% smaller than 36 Gbps. This indicates that a  
-degradation of around 30\% is expected when using m5.large instances at full host capacity. 
+The first and the second clients had access to a burst 
+bandwidth of 9.96 Gbps. The addition of the third tenant caused the average throughput to drop to 
+7.96 Gbps, while the fourth neighbor further reduced it to 5.96 Gbps. 
+The fifth neighbor decreased the throughput of all co-tenants to roughly 
+the baseline bandwidth of the m5.4xlarge (5 Gbps) with an average throughput of 4.94 Gbps. 
+The sixth node introduced the first significant decrease below the baseline bandwidth to an average 
+of 4.12 Gbps, which is 17.6\% less than the baseline. 
+Starting from the third tenant, the sum of the throughputs across all nodes remained around 24.7 Gbps.  
+This was expected as the bandwidth of the m5.metal is 25 Gbps, representing the upper limit for the 
+sum of the throughputs of all the nodes residing on the same dedicated host. \\
+For the xlarge, 2xlarge, and 4xlarge types, the product of the 
+maximum number of nodes on the dedicated host multiplied by the baseline bandwidth of the respective
+instance type equals 30 Gbps. This value is 16.7\% smaller than the 25 Gbps bandwidth 
+of the physical server, which explains the average degradation of 17\% we observed in the previous 
+experiment. The same behavior should be expected when using xlarge and 2xlarge instances. 
+For the large instance type, however, the product is equal to 
+36 Gbps (\begin{math} 48 \times 0.75\end{math}).
+25 Gbps is 30\% smaller than 36 Gbps, indicating that a  
+degradation of around 30\% is anticipated at full capacity when using m5.large instances. 
 We verify this assumption in the next experiment. Since the dedicated host can host 48 of m5.large 
-instances, we can't individually plot the graph of each instance. We used a plotbox graph to display the 
-distribution of the throughputs at the different levels. We also used a step size of 8 neighbors, to be 
-able to present the results in one graph. 
+instances, we cannot plot the graph of each instance. Instead, we used a plotbox graph to display the 
+distribution of the throughputs at different occupancy levels, as shown in figure \ref{fig::boxplot}.
 
 \begin{figure}[H]
 \centering
@@ -209,16 +194,17 @@ data \\
 };
 \end{axis}
 \end{tikzpicture}
-\caption{Throughput (UDP) of m5.large nodes when incrementally increasing the number tenants}
+\caption{Throughput (UDP) of m5.large nodes when incrementally increasing the number of busy tenants}
+\label{fig::boxplot}
 \end{figure}
 \noindent
-The first node has access to a throughput of 9.96 Gbps, which represents the maximum burst bandwidth. 
-At 8 neighbors, the average throughput drops to 3 Gbps. We then observe a gradual degradation 
-with an average of 1.5 Gbps at 16 nodes, 1 Gbps at 24 nodes, and  0.75 Gbps at 32 nodes,  which corresponds 
-to the baseline bandwidth of the m5.large instance type. 
-At this level, we interestingly notice zero variation between the 
-different co-tenants. At 40 nodes, the average decreases to 0.614 Gbps and further to 0.51 Gbps at 48 nodes.  
-At full capacity, The average throughput (0.51 Gbps) is 30.7\% lower than the baseline bandwidth of the 
-m5.large instance (0.75 Gbps). This more significant performance degradation close to 30\% was expected 
-as hypothesized earlier. In this experiment, we also observe an important performance variation 
+The first node has access to a burst bandwidth of 9.96 Gbps.
+At eight neighbors, the average throughput dropped to 3 Gbps. We then observe a gradual degradation 
+with an average of 1.5 Gbps at 16 nodes, 1 Gbps at 24 nodes, and  0.75 Gbps at 32 nodes,  which 
+corresponds to the baseline bandwidth of the m5.large instance type. 
+At this level, we observed virtually no variation between the throughput levels. 
+At 40 nodes, the average bandwidth decreased to 0.614 Gbps and further to 0.51 Gbps at 48 nodes.  
+At full capacity, The average throughput (0.51 Gbps) was 30.7\% lower than the baseline bandwidth of the 
+m5.large instance (0.75 Gbps). This more pronounced performance degradation close to 30\%, aligned
+with our earlier hypothesis. In this experiment, we also observed a notable performance variation 
 between the different nodes compared to the previous experiment.
